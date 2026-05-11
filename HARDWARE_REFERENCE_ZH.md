@@ -91,5 +91,5 @@
 |---|---|
 | 中文 Wiki | https://docs.waveshare.net/ESP32-S3-Touch-LCD-1.69/ |
 | 英文文档 | https://docs.waveshare.com/ESP32-S3-Touch-LCD-1.69 |
-| 原理图 V2.1 | https://files.waveshare.com/wiki/ESP32-S3-Touch-LCD-1.69/ESP32-S3-Touch-LCD-1.69_V2.1.pdf |
+| 原理图 V2.1 | https://gitee.com/waveshare/esp32-s3-touch-lcd-1.69/blob/main/hardware/schematics/ESP32-S3-Touch-LCD-1.69_V2.1.pdf |
 | 板级支持包 (BSP) | https://github.com/waveshareteam/Waveshare-ESP32-components/tree/master/bsp/esp32_s3_touch_lcd_1_69 |

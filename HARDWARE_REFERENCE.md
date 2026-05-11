@@ -91,5 +91,5 @@ Shared I2C bus: `SCL=GPIO10`, `SDA=GPIO11`.
 |---|---|
 | Chinese Wiki | https://docs.waveshare.net/ESP32-S3-Touch-LCD-1.69/ |
 | English Documentation | https://docs.waveshare.com/ESP32-S3-Touch-LCD-1.69 |
-| Schematic V2.1 | https://files.waveshare.com/wiki/ESP32-S3-Touch-LCD-1.69/ESP32-S3-Touch-LCD-1.69_V2.1.pdf |
+| Schematic V2.1 | https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/blob/main/hardware/schematics/ESP32-S3-Touch-LCD-1.69_V2.1.pdf |
 | Board Support Package (BSP) | https://github.com/waveshareteam/Waveshare-ESP32-components/tree/master/bsp/esp32_s3_touch_lcd_1_69 |
