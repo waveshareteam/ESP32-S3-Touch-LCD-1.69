@@ -11,11 +11,21 @@ ESP32-S3-Touch-LCD-1.69 integrates a 1.69-inch capacitive touch screen, IMU, RTC
 
 ---
 
-## 🔧 Configuration
+## 🚀 Getting Started
 
-You can find detailed configuration information on the product wiki page
+You can find detailed setup and usage information in the [product documentation](https://docs.waveshare.com/ESP32-S3-Touch-LCD-1.69).
 
-For quick hardware lookup, see [HARDWARE_REFERENCE.md](HARDWARE_REFERENCE.md), which summarizes onboard peripherals, GPIO assignments, I2C addresses, and expansion interface signals.
+For hardware details, see [HARDWARE_REFERENCE.md](HARDWARE_REFERENCE.md) — a structured reference designed for both developers and AI coding assistants, covering onboard peripherals, GPIO assignments, I2C addresses, and expansion interface signals.
+
+---
+
+## 📁 Repository Contents
+
+- `assets`: Product images used by the README.
+- `examples`: Example programs for supported development frameworks.
+- `firmware`: Factory firmware binary.
+- `hardware`: Hardware design files (schematics, pinout diagrams, etc.).
+- `HARDWARE_REFERENCE.md`: Hardware quick reference.
 
 ---
 
