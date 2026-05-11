@@ -1,4 +1,4 @@
-# Waveshare ESP32-S3-Touch-LCD-1.69 Product Engineering Sample Program
+# Waveshare ESP32-S3-Touch-LCD-1.69 Product Repository
 
 [中文](README_ZH.md)
 

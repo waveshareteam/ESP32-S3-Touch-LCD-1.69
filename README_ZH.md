@@ -1,4 +1,4 @@
-# Waveshare ESP32-S3-Touch-LCD-1.69 产品工程示例程序
+# Waveshare ESP32-S3-Touch-LCD-1.69 产品仓库
 
 [English](README.md)
 
