@@ -15,15 +15,32 @@ Arduino_DataBus *bus = new Arduino_ESP32SPI(LCD_DC, LCD_CS, LCD_SCK, LCD_MOSI);
 Arduino_GFX *gfx = new Arduino_ST7789(bus, LCD_RST /* RST */,
                                       0 /* rotation */, true /* IPS */, LCD_WIDTH, LCD_HEIGHT, 0, 20, 0, 0);
 
+const uint8_t TEXT_SIZE = 3;
+const int16_t FONT_WIDTH = 6;
+const int16_t FONT_HEIGHT = 8;
+const int16_t LINE_GAP = 10;
+
 int16_t getCenteredX(const char *text, uint8_t textSize) {
-  int16_t textWidth = strlen(text) * 3 * textSize;  // 6 pixels per character in default size
-  return (LCD_WIDTH - textWidth) / 2;
+  int16_t textWidth = strlen(text) * FONT_WIDTH * textSize;
+  int16_t x = (LCD_WIDTH - textWidth) / 2;
+  return x > 0 ? x : 0;
+}
+
+int16_t getTextBlockY() {
+  int16_t lineHeight = FONT_HEIGHT * TEXT_SIZE;
+  int16_t totalHeight = (lineHeight * 2) + LINE_GAP;
+  return (LCD_HEIGHT - totalHeight) / 2;
+}
+
+void drawCenteredText(const char *text, int16_t y) {
+  gfx->setCursor(getCenteredX(text, TEXT_SIZE), y);
+  gfx->println(text);
 }
 
 void setup() {
   USBSerial.begin(115200);
-  if (!rtc.begin(Wire, PCF85063_SLAVE_ADDRESS, IIC_SDA, IIC_SCL)) {
-    USBSerial.println("Failed to find PCF8563 - check your wiring!");
+  if (!rtc.begin(Wire, IIC_SDA, IIC_SCL)) {
+    USBSerial.println("Failed to find PCF85063 - check your wiring!");
     while (1) {
       delay(1000);
     }
@@ -38,7 +55,7 @@ void setup() {
 
   rtc.setDateTime(year, month, day, hour, minute, second);
   gfx->begin();
-  gfx->fillScreen(WHITE);
+  gfx->fillScreen(RGB565_WHITE);
   pinMode(LCD_BL, OUTPUT);
   digitalWrite(LCD_BL, HIGH);
 }
@@ -50,25 +67,28 @@ void loop() {
 
     RTC_DateTime datetime = rtc.getDateTime();
 
-    // Format the current time as a string
-    char timeString[20];
-    sprintf(timeString, "%04d-%02d-%02d %02d:%02d:%02d",
-            datetime.year, datetime.month, datetime.day,
-            datetime.hour, datetime.minute, datetime.second);
+    char dateString[11];
+    char timeString[9];
+    char dateTimeString[20];
+
+    sprintf(dateString, "%04d-%02d-%02d", datetime.getYear(), datetime.getMonth(), datetime.getDay());
+    sprintf(timeString, "%02d:%02d:%02d", datetime.getHour(), datetime.getMinute(), datetime.getSecond());
+    sprintf(dateTimeString, "%s %s", dateString, timeString);
 
     // Only update the time if it has changed
-    if (strcmp(timeString, previousTimeString) != 0) {
-      // Clear the previous time area by filling a small rectangle
-      gfx->fillRect(0, 150, LCD_WIDTH, 50, WHITE);  // Clear the area for the time
-      gfx->setTextColor(BLACK);
-      gfx->setTextSize(3,3,0);
+    if (strcmp(dateTimeString, previousTimeString) != 0) {
+      int16_t lineHeight = FONT_HEIGHT * TEXT_SIZE;
+      int16_t dateY = getTextBlockY();
+      int16_t timeY = dateY + lineHeight + LINE_GAP;
 
-      int16_t timeX = getCenteredX(timeString, 3);
-      gfx->setCursor(timeX, 150);  // Adjust Y-coordinate as needed
-      gfx->println(timeString);  // Display the new time
+      gfx->fillRect(0, dateY - 4, LCD_WIDTH, (lineHeight * 2) + LINE_GAP + 8, RGB565_WHITE);
+      gfx->setTextColor(RGB565_BLACK);
+      gfx->setTextSize(TEXT_SIZE);
 
-      // Save the current time as the previous time
-      strcpy(previousTimeString, timeString);
+      drawCenteredText(dateString, dateY);
+      drawCenteredText(timeString, timeY);
+
+      strcpy(previousTimeString, dateTimeString);
     }
   }
 }

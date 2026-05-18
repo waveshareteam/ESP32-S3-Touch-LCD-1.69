@@ -27,29 +27,26 @@
  * @date      2023-04-24
  *
  */
-#include <Wire.h>
-#include <SPI.h>
-#include <Arduino.h>
-#include "TouchDrvCSTXXX.hpp"
+#include <TouchDrv.hpp>
 
-#ifndef SENSOR_SDA
-#define SENSOR_SDA  8
+#ifndef TOUCH_SDA
+#define TOUCH_SDA  3
 #endif
 
-#ifndef SENSOR_SCL
-#define SENSOR_SCL  10
+#ifndef TOUCH_SCL
+#define TOUCH_SCL  2
 #endif
 
-#ifndef SENSOR_IRQ
-#define SENSOR_IRQ  5
+#ifndef TOUCH_IRQ
+#define TOUCH_IRQ  21
 #endif
 
-#ifndef SENSOR_RST
-#define SENSOR_RST  -1
+#ifndef TOUCH_RST
+#define TOUCH_RST  16
 #endif
 
 TouchDrvCSTXXX touch;
-int16_t x[5], y[5];
+volatile bool isPressed = false;
 
 void scanDevices(void)
 {
@@ -60,10 +57,14 @@ void scanDevices(void)
         Wire.beginTransmission(address);
         error = Wire.endTransmission();
         if (error == 0) {
-            Serial.printf("I2C device found at address 0x%02X\n", address);
+            Serial.print("I2C device found at address 0x");
+            Serial.println(address, HEX);
             nDevices++;
         } else if (error != 2) {
-            Serial.printf("Error %d at address 0x%02X\n", error, address);
+            Serial.print("Error ");
+            Serial.print(error);
+            Serial.print(" at address 0x");
+            Serial.println(address, HEX);
         }
     }
     if (nDevices == 0) {
@@ -76,11 +77,11 @@ void setup()
     Serial.begin(115200);
     while (!Serial);
 
-#if SENSOR_RST != -1
-    pinMode(SENSOR_RST, OUTPUT);
-    digitalWrite(SENSOR_RST, LOW);
+#if TOUCH_RST != -1
+    pinMode(TOUCH_RST, OUTPUT);
+    digitalWrite(TOUCH_RST, LOW);
     delay(30);
-    digitalWrite(SENSOR_RST, HIGH);
+    digitalWrite(TOUCH_RST, HIGH);
     delay(50);
     // delay(1000);
 #endif
@@ -88,11 +89,17 @@ void setup()
     // Search for known CSTxxx device addresses
     uint8_t address = 0xFF;
 
-#ifdef ARDUINO_ARCH_RP2040
-    Wire.setSCL(SENSOR_SCL);
-    Wire.setSDA(SENSOR_SDA);
+#if (defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_STM32)) && !defined(ARDUINO_ARCH_MBED)
+    Wire.setSCL(TOUCH_SCL);
+    Wire.setSDA(TOUCH_SDA);
+    Wire.begin();
+#elif defined(ARDUINO_ARCH_NRF52)
+    Wire.setPins(TOUCH_SDA, TOUCH_SCL);
+    Wire.begin();
+#elif defined(ARDUINO_ARCH_ESP32)
+    Wire.begin(TOUCH_SDA, TOUCH_SCL);
 #else
-    Wire.begin(SENSOR_SDA, SENSOR_SCL);
+    Wire.begin();
 #endif
 
     // Scan I2C devices
@@ -114,18 +121,40 @@ void setup()
         Serial.println("Could't find touch chip!"); delay(1000);
     }
 
-    touch.setPins(SENSOR_RST, SENSOR_IRQ);
-    touch.begin(Wire, address, SENSOR_SDA, SENSOR_SCL);
+    touch.setPins(TOUCH_RST, TOUCH_IRQ);
 
+    /*
+    * Support type.
+    * TouchDrv_UNKNOWN      : Judging by identification ID
+    * TouchDrv_CST8XX       : CST816X,CST716,CST820
+    * TouchDrv_CST226       : CST226X,CST328
+    * TouchDrv_CST92XX      : CST9217,CST9220
+    */
+    // Can choose fixed touch model or automatic identification by ID
+    // touch.setTouchDrvModel(TouchDrv_CST8XX);
+    // touch.setTouchDrvModel(TouchDrv_CST226);
+    // touch.setTouchDrvModel(TouchDrv_CST92XX);
 
-    Serial.print("Model :"); Serial.println(touch.getModelName());
+    // For touchscreens without an RST pin, the actual model may not be
+    // accurately detected, or some undefined behavior may occur.
 
-    // T-Display-S3 CST816 touch panel, touch button coordinates are is 85 , 160
-    touch.setCenterButtonCoordinate(85, 360);
+    // Support CST81X CST226 CST9217 CST9220 CST3530 ....
+    bool result = touch.begin(Wire, address, TOUCH_SDA, TOUCH_SCL);
+    if (result == false) {
+        while (1) {
+            Serial.println("Failed to initialize CST series touch, please check the connection...");
+            delay(1000);
+        }
+    }
+
+    // T-Display-S3 CST328 touch panel, touch button coordinates are is 85 , 360
+    // touch.setCenterButtonCoordinate(85, 360);
 
     // T-Display-AMOLED 1.91 Inch CST816T touch panel, touch button coordinates is 600, 120.
     // touch.setCenterButtonCoordinate(600, 120);  // Only suitable for AMOLED 1.91 inch
 
+    // T-Display-Bar Inch CST820 touch panel, touch button coordinates is 30,400
+    // touch.setCenterButtonCoordinate(30, 400);  // Only suitable for T-Display-Bar
 
     // Depending on the touch panel, not all touch panels have touch buttons.
     touch.setHomeButtonCallback([](void *user_data) {
@@ -147,29 +176,56 @@ void setup()
     // Set mirror xy
     // touch.setMirrorXY(true, true);
 
+    //Register touch plane interrupt pin
+    attachInterrupt(TOUCH_IRQ, []() {
+        isPressed = true;
+    }, FALLING);
+
+    Serial.println("Touch Info:");
+    Serial.print("Model: "); Serial.println(touch.getModelName());
+    Serial.print("ID: 0x"); Serial.println(touch.getChipID(), HEX);
+    Serial.print("Max Touch Points: "); Serial.println(touch.getSupportTouchPoint());
+    uint16_t resX = touch.getResolutionX();
+    uint16_t resY = touch.getResolutionY();
+    if (resX == 0 || resY == 0) {
+        Serial.println("The touch driver not support get touch resolution,please use setResolution() to set touch resolution.");
+        // touch.setResolution(480, 320);
+    } else {
+        Serial.print("Resolution: "); Serial.print(resX); Serial.print(" x "); Serial.println(resY);
+    }
+    delay(3000);
 }
 
 void loop()
 {
-    uint8_t touched = touch.getPoint(x, y, touch.getSupportTouchPoint());
-    if (touched) {
-        for (int i = 0; i < touched; ++i) {
-            Serial.print("X[");
-            Serial.print(i);
-            Serial.print("]:");
-            Serial.print(x[i]);
-            Serial.print(" ");
-            Serial.print(" Y[");
-            Serial.print(i);
-            Serial.print("]:");
-            Serial.print(y[i]);
-            Serial.print(" ");
+    if (isPressed) {
+        isPressed = false;
+        TouchPoints touch_points = touch.getTouchPoints();
+        if (touch_points.hasPoints()) {
+            for (int i = 0; i < touch_points.getPointCount(); ++i) {
+                const TouchPoint &point = touch_points.getPoint(i);
+                Serial.print("ID: ");
+                Serial.print(point.id);
+                Serial.print(" ");
+                Serial.print("X: ");
+                Serial.print(point.x);
+                Serial.print(" ");
+                Serial.print("Y: ");
+                Serial.print(point.y);
+                Serial.print(" ");
+                Serial.print("Pressure: ");
+                Serial.print(point.pressure);
+                Serial.print(" ");
+                Serial.print("Event: ");
+                switch (point.event) {
+                case 0: Serial.print("Released"); break;
+                case 6: Serial.print("Pressed"); break;
+                default: Serial.print("Unknown"); break;
+                }
+                Serial.println();
+            }
+            Serial.println();
         }
-        Serial.println();
     }
-
     delay(5);
 }
-
-
-

@@ -59,8 +59,8 @@ void example_increase_reboot(void *arg) {
 
 void setup() {
   USBSerial.begin(115200); /* prepare for possible serial debug */
-  if (!rtc.begin(Wire, PCF85063_SLAVE_ADDRESS, IIC_SDA, IIC_SCL)) {
-    USBSerial.println("Failed to find PCF8563 - check your wiring!");
+  if (!rtc.begin(Wire, IIC_SDA, IIC_SCL)) {
+    USBSerial.println("Failed to find PCF85063 - check your wiring!");
     while (1) {
       delay(1000);
     }
@@ -105,12 +105,6 @@ void setup() {
   disp_drv.draw_buf = &draw_buf;
   lv_disp_drv_register(&disp_drv);
 
-  /*Initialize the (dummy) input device driver*/
-  static lv_indev_drv_t indev_drv;
-  lv_indev_drv_init(&indev_drv);
-  indev_drv.type = LV_INDEV_TYPE_POINTER;
-  lv_indev_drv_register(&indev_drv);
-
   // lv_obj_t *label = lv_label_create(lv_scr_act());
   // lv_label_set_text(label, "Hello Ardino and LVGL!");
   // lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
@@ -142,22 +136,22 @@ void loop() {
     lastMillis = millis();
     RTC_DateTime datetime = rtc.getDateTime();
     USBSerial.printf(" Year :");
-    USBSerial.print(datetime.year);
+    USBSerial.print(datetime.getYear());
     USBSerial.printf(" Month:");
-    USBSerial.print(datetime.month);
+    USBSerial.print(datetime.getMonth());
     USBSerial.printf(" Day :");
-    USBSerial.print(datetime.day);
+    USBSerial.print(datetime.getDay());
     USBSerial.printf(" Hour:");
-    USBSerial.print(datetime.hour);
+    USBSerial.print(datetime.getHour());
     USBSerial.printf(" Minute:");
-    USBSerial.print(datetime.minute);
+    USBSerial.print(datetime.getMinute());
     USBSerial.printf(" Sec :");
-    USBSerial.println(datetime.second);
+    USBSerial.println(datetime.getSecond());
 
     char buf[32];
     snprintf(buf, sizeof(buf), "%02d:%02d:%02d\n%02d-%02d-%04d",
-             datetime.hour, datetime.minute, datetime.second,
-             datetime.day, datetime.month, datetime.year);
+             datetime.getHour(), datetime.getMinute(), datetime.getSecond(),
+             datetime.getDay(), datetime.getMonth(), datetime.getYear());
 
     // Update label with current time
     lv_label_set_text(label, buf);

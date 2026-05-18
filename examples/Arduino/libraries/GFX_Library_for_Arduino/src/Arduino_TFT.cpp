@@ -6,7 +6,6 @@
 #include "Arduino_GFX.h"
 #include "Arduino_TFT.h"
 #include "font/glcdfont.h"
-#include "pin_config.h"
 
 Arduino_TFT::Arduino_TFT(
     Arduino_DataBus *bus, int8_t rst, uint8_t r,
@@ -21,18 +20,21 @@ Arduino_TFT::Arduino_TFT(
 
 bool Arduino_TFT::begin(int32_t speed)
 {
-  if (_override_datamode != GFX_NOT_DEFINED)
+  if (speed != GFX_SKIP_DATABUS_BEGIN)
   {
-    if (!_bus->begin(speed, _override_datamode))
+    if (_override_datamode != GFX_NOT_DEFINED)
     {
-      return false;
+      if (!_bus->begin(speed, _override_datamode))
+      {
+        return false;
+      }
     }
-  }
-  else
-  {
-    if (!_bus->begin(speed))
+    else
     {
-      return false;
+      if (!_bus->begin(speed))
+      {
+        return false;
+      }
     }
   }
 
@@ -61,69 +63,61 @@ void Arduino_TFT::writeRepeat(uint16_t color, uint32_t len)
 
 void Arduino_TFT::writeFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color)
 {
-  // if (_ordered_in_range(x, 0, _max_x) && h)
-  // { // X on screen, nonzero height
-  //   if (h < 0)
-  //   {             // If negative height...
-  //     y += h + 1; //   Move Y to top edge
-  //     h = -h;     //   Use positive height
-  //   }
-  //   if (y <= _max_y)
-  //   { // Not off bottom
-  //     int16_t y2 = y + h - 1;
-  //     if (y2 >= 0)
-  //     { // Not off top
-  //       // Line partly or fully overlaps screen
-  //       if (y < 0)
-  //       {
-  //         y = 0;
-  //         h = y2 + 1;
-  //       } // Clip top
-  //       if (y2 > _max_y)
-  //       {
-  //         h = _max_y - y + 1;
-  //       } // Clip bottom
-  //       writeFillRectPreclipped(x, y, 1, h, color);
-  //     }
-  //   }
-  // }
-  for (int16_t i = y; i < y + h; i++)
-  {
-    writePixel(x, i, color);
+  if (_ordered_in_range(x, 0, _max_x) && h)
+  { // X on screen, nonzero height
+    if (h < 0)
+    {             // If negative height...
+      y += h + 1; //   Move Y to top edge
+      h = -h;     //   Use positive height
+    }
+    if (y <= _max_y)
+    { // Not off bottom
+      int16_t y2 = y + h - 1;
+      if (y2 >= 0)
+      { // Not off top
+        // Line partly or fully overlaps screen
+        if (y < 0)
+        {
+          y = 0;
+          h = y2 + 1;
+        } // Clip top
+        if (y2 > _max_y)
+        {
+          h = _max_y - y + 1;
+        } // Clip bottom
+        writeFillRectPreclipped(x, y, 1, h, color);
+      }
+    }
   }
 }
 
 void Arduino_TFT::writeFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color)
 {
-  // if (_ordered_in_range(y, 0, _max_y) && w)
-  // { // Y on screen, nonzero width
-  //   if (w < 0)
-  //   {             // If negative width...
-  //     x += w + 1; //   Move X to left edge
-  //     w = -w;     //   Use positive width
-  //   }
-  //   if (x <= _max_x)
-  //   { // Not off right
-  //     int16_t x2 = x + w - 1;
-  //     if (x2 >= 0)
-  //     { // Not off left
-  //       // Line partly or fully overlaps screen
-  //       if (x < 0)
-  //       {
-  //         x = 0;
-  //         w = x2 + 1;
-  //       } // Clip left
-  //       if (x2 > _max_x)
-  //       {
-  //         w = _max_x - x + 1;
-  //       } // Clip right
-  //       writeFillRectPreclipped(x, y, w, 1, color);
-  //     }
-  //   }
-  // }
-  for (int16_t i = x; i < x + w; i++)
-  {
-    writePixel(i, y, color);
+  if (_ordered_in_range(y, 0, _max_y) && w)
+  { // Y on screen, nonzero width
+    if (w < 0)
+    {             // If negative width...
+      x += w + 1; //   Move X to left edge
+      w = -w;     //   Use positive width
+    }
+    if (x <= _max_x)
+    { // Not off right
+      int16_t x2 = x + w - 1;
+      if (x2 >= 0)
+      { // Not off left
+        // Line partly or fully overlaps screen
+        if (x < 0)
+        {
+          x = 0;
+          w = x2 + 1;
+        } // Clip left
+        if (x2 > _max_x)
+        {
+          w = _max_x - x + 1;
+        } // Clip right
+        writeFillRectPreclipped(x, y, w, 1, color);
+      }
+    }
   }
 }
 
@@ -158,22 +152,34 @@ void Arduino_TFT::setRotation(uint8_t r)
   Arduino_GFX::setRotation(r);
   switch (_rotation)
   {
-  case 5:
-  case 3:
-    _xStart = ROW_OFFSET2;
-    _yStart = COL_OFFSET1;
-    break;
-  case 6:
-  case 2:
-    _xStart = COL_OFFSET2;
-    _yStart = ROW_OFFSET2;
-    break;
-  case 7:
   case 1:
     _xStart = ROW_OFFSET1;
     _yStart = COL_OFFSET2;
     break;
+  case 2:
+    _xStart = COL_OFFSET2;
+    _yStart = ROW_OFFSET2;
+    break;
+  case 3:
+    _xStart = ROW_OFFSET2;
+    _yStart = COL_OFFSET1;
+    break;
   case 4:
+    _xStart = COL_OFFSET2;
+    _yStart = ROW_OFFSET1;
+    break;
+  case 5:
+    _xStart = ROW_OFFSET2;
+    _yStart = COL_OFFSET2;
+    break;
+  case 6:
+    _xStart = COL_OFFSET1;
+    _yStart = ROW_OFFSET2;
+    break;
+  case 7:
+    _xStart = ROW_OFFSET1;
+    _yStart = COL_OFFSET1;
+    break;
   default: // case 0:
     _xStart = COL_OFFSET1;
     _yStart = ROW_OFFSET1;
@@ -662,46 +668,57 @@ void Arduino_TFT::draw16bitBeRGBBitmap(
     int16_t x, int16_t y,
     uint16_t *bitmap, int16_t w, int16_t h)
 {
-    if (x >= _max_x || y >= _max_y || (x + w <= 0) || (y + h <= 0))
-        return;
-
-    // Clip width and height
-    if (y < 0) {
-        bitmap -= y * w;
-        h += y;
-        y = 0;
+  if (
+      ((x + w - 1) < 0) || // Outside left
+      ((y + h - 1) < 0) || // Outside top
+      (x > _max_x) ||      // Outside right
+      (y > _max_y)         // Outside bottom
+  )
+  {
+    return;
+  }
+  else
+  {
+    int16_t out_width = w;
+    if ((y + h - 1) > _max_y)
+    {
+      h -= (y + h - 1) - _max_y;
     }
-    if (x < 0) {
-        bitmap -= x;
-        w += x;
-        x = 0;
+    if (y < 0)
+    {
+      bitmap -= y * w;
+      h += y;
+      y = 0;
     }
-    if ((y + h) > _max_y) {
-        h = _max_y - y;
+    if ((x + w - 1) > _max_x)
+    {
+      out_width -= (x + w - 1) - _max_x;
     }
-    if ((x + w) > _max_x) {
-        w = _max_x - x;
+    if (x < 0)
+    {
+      bitmap -= x;
+      out_width += x;
+      x = 0;
     }
-
-    if (h <= 0 || w <= 0)
-        return;
 
     startWrite();
-    writeAddrWindow(x, y, w, h);
-    
-    // Optimize data transfer
-    size_t totalBytes = w * h * 2;
-    if (w < _max_x) {
-        for (int16_t j = 0; j < h; j++) {
-            _bus->writeBytes((uint8_t *)bitmap, w * 2);
-            bitmap += w;
-        }
-    } else {
-        _bus->writeBytes((uint8_t *)bitmap, totalBytes);
+    writeAddrWindow(x, y, out_width, h);
+    if (out_width < w)
+    {
+      out_width <<= 1;
+      for (int16_t j = 0; j < h; j++)
+      {
+        _bus->writeBytes((uint8_t *)bitmap, out_width);
+        bitmap += w;
+      }
+    }
+    else
+    {
+      _bus->writeBytes((uint8_t *)bitmap, (uint32_t)w * h * 2);
     }
     endWrite();
+  }
 }
-
 
 void Arduino_TFT::draw16bitBeRGBBitmapR1(
     int16_t x, int16_t y,
@@ -728,7 +745,7 @@ void Arduino_TFT::draw16bitBeRGBBitmapR1(
   else
   {
     startWrite();
-    writeAddrWindow(x, y, w, h);
+    writeAddrWindow(x, y, h, w);
     _bus->write16bitBeRGBBitmapR1(bitmap, w, h);
     endWrite();
   }
@@ -981,7 +998,7 @@ void Arduino_TFT::drawChar(int16_t x, int16_t y, unsigned char c, uint16_t color
   {
     Arduino_GFX::drawChar(x, y, c, color, bg);
   }
-  else // not u8g2Font
+  else // glcdfont
 #endif // defined(U8G2_FONT_SUPPORT)
   {
     block_w = 6 * textsize_x;

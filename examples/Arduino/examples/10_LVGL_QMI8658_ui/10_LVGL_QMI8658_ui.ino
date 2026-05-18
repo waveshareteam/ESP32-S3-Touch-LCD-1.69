@@ -4,12 +4,18 @@
 #include "lv_conf.h"
 #include <Arduino.h>
 #include <Wire.h>
+#include <math.h>
 #include "SensorQMI8658.hpp"
 #include "HWCDC.h"
 
 HWCDC USBSerial;
 
 #define EXAMPLE_LVGL_TICK_PERIOD_MS 2
+#define ACC_CHART_SCALE 100
+#define GYR_CHART_SCALE 10
+#define GYR_CHART_RANGE_DPS 256
+#define CHART_POINT_COUNT 40
+#define CHART_POINT_SIZE 2
 
 static lv_disp_draw_buf_t draw_buf;
 static lv_color_t buf[LCD_WIDTH * LCD_HEIGHT / 10];
@@ -20,10 +26,14 @@ IMUdata acc;
 IMUdata gyr;
 
 lv_obj_t *label;                  // Global label object
-lv_obj_t *chart;                  // Global chart object
+lv_obj_t *acc_chart;              // Acceleration chart object
+lv_obj_t *gyr_chart;              // Gyroscope chart object
 lv_chart_series_t *acc_series_x;  // Acceleration X series
 lv_chart_series_t *acc_series_y;  // Acceleration Y series
 lv_chart_series_t *acc_series_z;  // Acceleration Z series
+lv_chart_series_t *gyr_series_x;  // Gyroscope X series
+lv_chart_series_t *gyr_series_y;  // Gyroscope Y series
+lv_chart_series_t *gyr_series_z;  // Gyroscope Z series
 
 Arduino_DataBus *bus = new Arduino_ESP32SPI(LCD_DC, LCD_CS, LCD_SCK, LCD_MOSI);
 
@@ -33,7 +43,7 @@ Arduino_GFX *gfx = new Arduino_ST7789(bus, LCD_RST /* RST */,
 #if LV_USE_LOG != 0
 /* Serial debugging */
 void my_print(const char *buf) {
-  USBSerial.printf(buf);
+  USBSerial.printf("%s", buf);
   USBSerial.flush();
 }
 #endif
@@ -57,12 +67,12 @@ void example_increase_lvgl_tick(void *arg) {
   lv_tick_inc(EXAMPLE_LVGL_TICK_PERIOD_MS);
 }
 
-static uint8_t count = 0;
-void example_increase_reboot(void *arg) {
-  count++;
-  if (count == 30) {
-    esp_restart();
-  }
+static lv_coord_t accel_to_chart_value(float value) {
+  return (lv_coord_t)lroundf(value * ACC_CHART_SCALE);
+}
+
+static lv_coord_t gyro_to_chart_value(float value) {
+  return (lv_coord_t)lroundf(value * GYR_CHART_SCALE);
 }
 
 
@@ -101,14 +111,8 @@ void setup() {
   disp_drv.draw_buf = &draw_buf;
   lv_disp_drv_register(&disp_drv);
 
-  /*Initialize the (dummy) input device driver*/
-  static lv_indev_drv_t indev_drv;
-  lv_indev_drv_init(&indev_drv);
-  indev_drv.type = LV_INDEV_TYPE_POINTER;
-  lv_indev_drv_register(&indev_drv);
-
-  lv_obj_t *label = lv_label_create(lv_scr_act());
-  lv_label_set_text(label, "Hello Ardino and LVGL!");
+  label = lv_label_create(lv_scr_act());
+  lv_label_set_text(label, "Hello Arduino and LVGL!");
   lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
 
   const esp_timer_create_args_t lvgl_tick_timer_args = {
@@ -116,29 +120,39 @@ void setup() {
     .name = "lvgl_tick"
   };
 
-  const esp_timer_create_args_t reboot_timer_args = {
-    .callback = &example_increase_reboot,
-    .name = "reboot"
-  };
-
   esp_timer_handle_t lvgl_tick_timer = NULL;
   esp_timer_create(&lvgl_tick_timer_args, &lvgl_tick_timer);
   esp_timer_start_periodic(lvgl_tick_timer, EXAMPLE_LVGL_TICK_PERIOD_MS * 1000);
 
-  label = lv_label_create(lv_scr_act());
-  lv_label_set_text(label, "Initializing...");
-  lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+  lv_label_set_text(label, "ACC: R/G/B  GYR: O/P/C");
+  lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 2);
 
-  /* Create chart */
-  chart = lv_chart_create(lv_scr_act());
-  lv_obj_set_size(chart, 240, 280);
-  lv_obj_align(chart, LV_ALIGN_CENTER, 0, 0);
-  lv_chart_set_type(chart, LV_CHART_TYPE_LINE);              /* Set the type to line */
-  lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, -3, 3); /* Set the range of y axis */
-  lv_chart_set_point_count(chart, 20);                       /* Set the number of data points */
-  acc_series_x = lv_chart_add_series(chart, lv_palette_main(LV_PALETTE_RED), LV_CHART_AXIS_PRIMARY_Y);
-  acc_series_y = lv_chart_add_series(chart, lv_palette_main(LV_PALETTE_GREEN), LV_CHART_AXIS_PRIMARY_Y);
-  acc_series_z = lv_chart_add_series(chart, lv_palette_main(LV_PALETTE_BLUE), LV_CHART_AXIS_PRIMARY_Y);
+  /* Create acceleration chart */
+  acc_chart = lv_chart_create(lv_scr_act());
+  lv_obj_set_size(acc_chart, 240, 122);
+  lv_obj_align(acc_chart, LV_ALIGN_TOP_MID, 0, 20);
+  lv_chart_set_type(acc_chart, LV_CHART_TYPE_LINE);
+  lv_chart_set_range(acc_chart, LV_CHART_AXIS_PRIMARY_Y,
+                     -3 * ACC_CHART_SCALE, 3 * ACC_CHART_SCALE);
+  lv_chart_set_point_count(acc_chart, CHART_POINT_COUNT);
+  lv_obj_set_style_size(acc_chart, CHART_POINT_SIZE, LV_PART_INDICATOR);
+  acc_series_x = lv_chart_add_series(acc_chart, lv_palette_main(LV_PALETTE_RED), LV_CHART_AXIS_PRIMARY_Y);
+  acc_series_y = lv_chart_add_series(acc_chart, lv_palette_main(LV_PALETTE_GREEN), LV_CHART_AXIS_PRIMARY_Y);
+  acc_series_z = lv_chart_add_series(acc_chart, lv_palette_main(LV_PALETTE_BLUE), LV_CHART_AXIS_PRIMARY_Y);
+
+  /* Create gyroscope chart */
+  gyr_chart = lv_chart_create(lv_scr_act());
+  lv_obj_set_size(gyr_chart, 240, 122);
+  lv_obj_align(gyr_chart, LV_ALIGN_TOP_MID, 0, 154);
+  lv_chart_set_type(gyr_chart, LV_CHART_TYPE_LINE);
+  lv_chart_set_range(gyr_chart, LV_CHART_AXIS_PRIMARY_Y,
+                     -GYR_CHART_RANGE_DPS * GYR_CHART_SCALE,
+                     GYR_CHART_RANGE_DPS * GYR_CHART_SCALE);
+  lv_chart_set_point_count(gyr_chart, CHART_POINT_COUNT);
+  lv_obj_set_style_size(gyr_chart, CHART_POINT_SIZE, LV_PART_INDICATOR);
+  gyr_series_x = lv_chart_add_series(gyr_chart, lv_palette_main(LV_PALETTE_ORANGE), LV_CHART_AXIS_PRIMARY_Y);
+  gyr_series_y = lv_chart_add_series(gyr_chart, lv_palette_main(LV_PALETTE_PURPLE), LV_CHART_AXIS_PRIMARY_Y);
+  gyr_series_z = lv_chart_add_series(gyr_chart, lv_palette_main(LV_PALETTE_CYAN), LV_CHART_AXIS_PRIMARY_Y);
 
   USBSerial.println("Setup done");
 
@@ -155,14 +169,12 @@ void setup() {
   qmi.configAccelerometer(
     SensorQMI8658::ACC_RANGE_4G,
     SensorQMI8658::ACC_ODR_1000Hz,
-    SensorQMI8658::LPF_MODE_0,
-    true);
+    SensorQMI8658::LPF_MODE_0);
 
   qmi.configGyroscope(
-    SensorQMI8658::GYR_RANGE_64DPS,
+    SensorQMI8658::GYR_RANGE_256DPS,
     SensorQMI8658::GYR_ODR_896_8Hz,
-    SensorQMI8658::LPF_MODE_3,
-    true);
+    SensorQMI8658::LPF_MODE_3);
 
   qmi.enableGyroscope();
   qmi.enableAccelerometer();
@@ -187,9 +199,9 @@ void loop() {
       USBSerial.println("}");
 
       // Update chart with new accelerometer data
-      lv_chart_set_next_value(chart, acc_series_x, acc.x);
-      lv_chart_set_next_value(chart, acc_series_y, acc.y);
-      lv_chart_set_next_value(chart, acc_series_z, acc.z);
+      lv_chart_set_next_value(acc_chart, acc_series_x, accel_to_chart_value(acc.x));
+      lv_chart_set_next_value(acc_chart, acc_series_y, accel_to_chart_value(acc.y));
+      lv_chart_set_next_value(acc_chart, acc_series_z, accel_to_chart_value(acc.z));
     }
 
     if (qmi.getGyroscope(gyr.x, gyr.y, gyr.z)) {
@@ -200,6 +212,11 @@ void loop() {
       USBSerial.print(",");
       USBSerial.print(gyr.z);
       USBSerial.println("}");
+
+      // Update chart with new gyroscope data
+      lv_chart_set_next_value(gyr_chart, gyr_series_x, gyro_to_chart_value(gyr.x));
+      lv_chart_set_next_value(gyr_chart, gyr_series_y, gyro_to_chart_value(gyr.y));
+      lv_chart_set_next_value(gyr_chart, gyr_series_z, gyro_to_chart_value(gyr.z));
     }
   }
   delay(20);  // Increase the frequency of data polling

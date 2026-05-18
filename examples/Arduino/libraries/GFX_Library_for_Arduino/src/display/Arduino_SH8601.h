@@ -2,9 +2,10 @@
 
 #include "../Arduino_GFX.h"
 #include "../Arduino_TFT.h"
+#include "../Arduino_OLED.h"
 
-#define SH8601_MAXWIDTH 480  ///< SH8601 max TFT width
-#define SH8601_MAXHEIGHT 480 ///< SH8601 max TFT width
+#define SH8601_TFTWIDTH 480  ///< SH8601 max TFT width
+#define SH8601_TFTHEIGHT 480 ///< SH8601 max TFT height
 
 #define SH8601_RST_DELAY 200    ///< delay ms wait for reset finish
 #define SH8601_SLPIN_DELAY 120  ///< delay ms wait for sleep in finish
@@ -111,10 +112,10 @@
 
 enum
 {
-    SH8601_ContrastOff = 0,
-    SH8601_LowContrast,
-    SH8601_MediumContrast,
-    SH8601_HighContrast
+  SH8601_ContrastOff = 0,
+  SH8601_LowContrast,
+  SH8601_MediumContrast,
+  SH8601_HighContrast
 };
 
 static const uint8_t sh8601_init_operations[] = {
@@ -151,7 +152,7 @@ static const uint8_t sh8601_init_operations[] = {
 
     WRITE_C8_D8, SH8601_W_WCTRLD1, 0x28, // Brightness Control On and Display Dimming On
 
-    WRITE_C8_D8, SH8601_W_WDBRIGHTNESSVALNOR, 0x00, // Brightness adjustment
+    WRITE_C8_D8, SH8601_W_WDBRIGHTNESSVALNOR, 0xD0, // Brightness adjustment
 
     // High contrast mode (Sunlight Readability Enhancement)
     WRITE_C8_D8, SH8601_W_WCE, 0x00, // Off
@@ -163,22 +164,26 @@ static const uint8_t sh8601_init_operations[] = {
 
     DELAY, 10};
 
-class Arduino_SH8601 : public Arduino_TFT
+class Arduino_SH8601 : public Arduino_OLED
 {
 public:
-    Arduino_SH8601(Arduino_DataBus *bus, int8_t rst = GFX_NOT_DEFINED, uint8_t r = 0, bool ips = false, int16_t w = SH8601_MAXWIDTH, int16_t h = SH8601_MAXHEIGHT);
+  Arduino_SH8601(
+      Arduino_DataBus *bus, int8_t rst = GFX_NOT_DEFINED, uint8_t r = 0,
+      int16_t w = SH8601_TFTWIDTH, int16_t h = SH8601_TFTHEIGHT,
+      uint8_t col_offset1 = 0, uint8_t row_offset1 = 0, uint8_t col_offset2 = 0, uint8_t row_offset2 = 0);
 
-    bool begin(int32_t speed = GFX_NOT_DEFINED) override;
-    void writeAddrWindow(int16_t x, int16_t y, uint16_t w, uint16_t h) override;
-    void setRotation(uint8_t r) override;
-    void invertDisplay(bool) override;
-    void displayOn() override;
-    void displayOff() override;
-    void Display_Brightness(uint8_t brightness) override;
-    void SetContrast(uint8_t Contrast) override;
+  bool begin(int32_t speed = GFX_NOT_DEFINED) override;
+  void writeAddrWindow(int16_t x, int16_t y, uint16_t w, uint16_t h) override;
+  void setRotation(uint8_t r) override;
+  void invertDisplay(bool) override;
+  void displayOn() override;
+  void displayOff() override;
+
+  void setBrightness(uint8_t brightness) override;
+  void setContrast(uint8_t contrast) override;
 
 protected:
-    void tftInit() override;
+  void tftInit() override;
 
 private:
 };

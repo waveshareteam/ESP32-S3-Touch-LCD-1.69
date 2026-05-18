@@ -4,8 +4,6 @@
 #include <Wire.h>
 #include "HWCDC.h"
 
-HWCDC USBSerial;
-
 Arduino_DataBus *bus = new Arduino_ESP32SPI(LCD_DC, LCD_CS, LCD_SCK, LCD_MOSI);
 
 Arduino_GFX *gfx = new Arduino_ST7789(bus, LCD_RST /* RST */,
@@ -26,11 +24,36 @@ int16_t w, h, text_size, banner_height, graph_baseline, graph_height, channel_wi
 
 // Channel color mapping from channel 1 to 14
 uint16_t channel_color[] = {
-  RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, MAGENTA,
-  RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, MAGENTA
+  RGB565_RED, RGB565_ORANGE, RGB565_YELLOW, RGB565_GREEN, RGB565_CYAN, RGB565_BLUE, RGB565_MAGENTA,
+  RGB565_RED, RGB565_ORANGE, RGB565_YELLOW, RGB565_GREEN, RGB565_CYAN, RGB565_BLUE, RGB565_MAGENTA
 };
 
 uint8_t scan_count = 0;
+bool has_scan_result = false;
+
+static constexpr int16_t BANNER_TEXT_X = 40;
+
+void drawScanningStatus() {
+  gfx->fillRect(0, banner_height, w, h - banner_height, RGB565_BLACK);
+  gfx->setTextSize(1);
+  gfx->setTextColor(RGB565_WHITE);
+  gfx->setCursor(BANNER_TEXT_X, banner_height);
+  gfx->print("Scanning WiFi...");
+  gfx->setTextColor(RGB565_LIGHTGREY);
+  gfx->setCursor(BANNER_TEXT_X, banner_height + 10);
+  gfx->print("Please wait");
+
+  // Draw the channel axis immediately so the screen looks alive while the
+  // synchronous WiFi scan is running.
+  gfx->drawFastHLine(0, graph_baseline, gfx->width(), RGB565_DARKGREY);
+  for (int32_t channel = 1; channel <= 14; channel++) {
+    int16_t idx = channel - 1;
+    int16_t offset = (channel + 1) * channel_width;
+    gfx->setTextColor(channel_color[idx]);
+    gfx->setCursor(offset - ((channel < 10) ? 3 : 6), graph_baseline + 2);
+    gfx->print(channel);
+  }
+}
 
 void setup() {
   Serial.begin(115200);
@@ -69,12 +92,12 @@ void setup() {
 
   // init banner
   gfx->setTextSize(text_size);
-  gfx->fillScreen(BLACK);
-  gfx->setTextColor(RED);
-  gfx->setCursor(0, 0);
-  gfx->print("ESP");
-  gfx->setTextColor(WHITE);
-  gfx->print(" WiFi Analyzer");
+  gfx->fillScreen(RGB565_BLACK);
+  gfx->setTextColor(RGB565_RED);
+  gfx->setCursor(BANNER_TEXT_X, 0);
+ // gfx->print("ESP");
+  gfx->setTextColor(RGB565_WHITE);
+  gfx->print("WiFi Analyzer");
 }
 
 bool matchBssidPrefix(uint8_t *a, uint8_t *b) {
@@ -99,6 +122,10 @@ void loop() {
   uint16_t color;
   int16_t height, offset, text_width;
 
+  if (!has_scan_result) {
+    drawScanningStatus();
+  }
+
   // WiFi.scanNetworks will return the number of networks found
 #if defined(ESP32)
   int n = WiFi.scanNetworks(false /* async */, true /* show_hidden */, true /* passive */, 500 /* max_ms_per_chan */);
@@ -107,11 +134,11 @@ void loop() {
 #endif
 
   // clear old graph
-  gfx->fillRect(0, banner_height, w, h - banner_height, BLACK);
+  gfx->fillRect(0, banner_height, w, h - banner_height, RGB565_BLACK);
   gfx->setTextSize(1);
 
   if (n == 0) {
-    gfx->setTextColor(WHITE);
+    gfx->setTextColor(RGB565_WHITE);
     gfx->setCursor(0, banner_height);
     gfx->println("no networks found");
   } else {
@@ -225,10 +252,12 @@ void loop() {
   }
 
   // print WiFi stat
-  gfx->setTextColor(WHITE);
-  gfx->setCursor(0, banner_height);
+  gfx->setTextColor(RGB565_WHITE);
+  gfx->setCursor(BANNER_TEXT_X, banner_height);
   gfx->print(n);
-  gfx->print(" networks found, lesser noise channels: ");
+  gfx->print(" networks found");
+  gfx->setCursor(BANNER_TEXT_X, banner_height + 8);
+  gfx->print("lesser noise channels: ");
   bool listed_first_channel = false;
   int32_t min_noise = noise_list[0];           // init with channel 1 value
   for (channel = 2; channel <= 11; channel++)  // channels 12-14 may not available
@@ -255,7 +284,7 @@ void loop() {
   }
 
   // draw graph base axle
-  gfx->drawFastHLine(0, graph_baseline, gfx->width(), WHITE);
+  gfx->drawFastHLine(0, graph_baseline, gfx->width(), RGB565_WHITE);
   for (channel = 1; channel <= 14; channel++) {
     idx = channel - 1;
     offset = (channel + 1) * channel_width;
@@ -269,6 +298,8 @@ void loop() {
       gfx->print('}');
     }
   }
+
+  has_scan_result = true;
 
   // Wait a bit before scanning again
   // delay(SCAN_INTERVAL);

@@ -27,36 +27,54 @@
  * @date      2023-04-17
  *
  */
-#include <Wire.h>
-#include <SPI.h>
-#include <Arduino.h>
-#include "TouchDrvCHSC5816.hpp"
+#include <TouchDrv.hpp>
 
-#ifndef SENSOR_SDA
-#define SENSOR_SDA  39
+#ifndef TOUCH_SDA
+#define TOUCH_SDA  1
 #endif
 
-#ifndef SENSOR_SCL
-#define SENSOR_SCL  40
+#ifndef TOUCH_SCL
+#define TOUCH_SCL  2
 #endif
 
-#ifndef SENSOR_IRQ
-#define SENSOR_IRQ  13
+#ifndef TOUCH_IRQ
+#define TOUCH_IRQ  13
 #endif
 
-#ifndef SENSOR_RST
-#define SENSOR_RST  14
+#ifndef TOUCH_RST
+#define TOUCH_RST  14
 #endif
 
 TouchDrvCHSC5816 touch;
+
+#ifdef ARDUINO_T_AMOLED_147
+#include <XPowersAXP2101.tpp>   //PMU Library https://github.com/lewisxhe/XPowersLib.git
+XPowersAXP2101 power;
+#endif
+
+void beginPower()
+{
+    // T_AMOLED_147 The PMU voltage needs to be turned on to use the sensor
+#if defined(ARDUINO_T_AMOLED_147)
+    bool ret = power.begin(Wire, AXP2101_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL);
+    if (!ret) {
+        Serial.println("PMU NOT FOUND!\n");
+    }
+    power.setALDO1Voltage(1800); power.enableALDO1();
+    power.setALDO3Voltage(3300); power.enableALDO3();
+    power.setBLDO1Voltage(1800); power.enableBLDO1();
+#endif
+}
 
 void setup()
 {
     Serial.begin(115200);
     while (!Serial);
 
-    touch.setPins(SENSOR_RST, SENSOR_IRQ);
-    if (!touch.begin(Wire, CHSC5816_SLAVE_ADDRESS, SENSOR_SDA, SENSOR_SCL)) {
+    beginPower();
+
+    touch.setPins(TOUCH_RST, TOUCH_IRQ);
+    if (!touch.begin(Wire, CHSC5816_SLAVE_ADDRESS, TOUCH_SDA, TOUCH_SCL)) {
         Serial.println("Failed to find CHSC5816 - check your wiring!");
         while (1) {
             delay(1000);
@@ -64,29 +82,42 @@ void setup()
     }
 
     Serial.println("Init CHSC5816 Touch device success!");
+
+    Serial.println("Touch Info:");
+    Serial.print("Model: "); Serial.println(touch.getModelName());
+    Serial.print("ID: 0x"); Serial.println(touch.getChipID(), HEX);
+    Serial.print("Max Touch Points: "); Serial.println(touch.getSupportTouchPoint());
+    uint16_t resX = touch.getResolutionX();
+    uint16_t resY = touch.getResolutionY();
+    if (resX == 0 || resY == 0) {
+        Serial.println("The touch driver not support get touch resolution,please use setResolution() to set touch resolution.");
+        // touch.setResolution(480, 320);
+    } else {
+        Serial.print("Resolution: "); Serial.print(resX); Serial.print(" x "); Serial.println(resY);
+    }
+    delay(3000);
 }
 
 
 void loop()
 {
-    int16_t x[2], y[2];
-    if (digitalRead(SENSOR_IRQ) == LOW) {
-        uint8_t touched = touch.getPoint(x, y);
-        for (int i = 0; i < touched; ++i) {
-            Serial.print("X[");
-            Serial.print(i);
-            Serial.print("]:");
-            Serial.print(x[i]);
-            Serial.print(" ");
-            Serial.print(" Y[");
-            Serial.print(i);
-            Serial.print("]:");
-            Serial.print(y[i]);
-            Serial.print(" ");
+    if (touch.isPressed()) {
+        TouchPoints touch_points = touch.getTouchPoints();
+        if (touch_points.hasPoints()) {
+            for (int i = 0; i < touch_points.getPointCount(); ++i) {
+                const TouchPoint &point = touch_points.getPoint(i);
+                Serial.print("X[");
+                Serial.print(i);
+                Serial.print("]:");
+                Serial.print(point.x);
+                Serial.print(" ");
+                Serial.print(" Y[");
+                Serial.print(i);
+                Serial.print("]:");
+                Serial.print(point.y);
+                Serial.print(" ");
+            }
+            Serial.println();
         }
-        Serial.println();
     }
 }
-
-
-

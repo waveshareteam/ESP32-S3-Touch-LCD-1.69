@@ -21,13 +21,13 @@ void setup(void) {
   if (!gfx->begin()) {
     USBSerial.println("gfx->begin() failed!");
   }
-  gfx->fillScreen(BLACK);
+  gfx->fillScreen(RGB565_BLACK);
 
   pinMode(LCD_BL, OUTPUT);
   digitalWrite(LCD_BL, HIGH);
 
   gfx->setCursor(10, 10);
-  gfx->setTextColor(RED);
+  gfx->setTextColor(RGB565_RED);
   gfx->println("Hello World!");
 
   delay(5000);  // 5 seconds

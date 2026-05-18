@@ -33,11 +33,11 @@
 #include "SensorCM32181.hpp"
 
 #ifndef SENSOR_SDA
-#define SENSOR_SDA  39
+#define SENSOR_SDA  1
 #endif
 
 #ifndef SENSOR_SCL
-#define SENSOR_SCL  40
+#define SENSOR_SCL  2
 #endif
 
 #ifndef SENSOR_IRQ
@@ -89,7 +89,8 @@ void loop()
     // Get conversion data , The manual does not provide information on how to obtain the
     //  calibration value, now use the calibration value 0.28 provided by the manual
     float lux = light.getLux();
-    Serial.printf("RAW:%u Lux:%.2f\n", raw, lux);
+    Serial.print(" RAW:"); Serial.print(raw);
+    Serial.print(" Lux:"); Serial.println(lux);
     delay(500);
 }
 

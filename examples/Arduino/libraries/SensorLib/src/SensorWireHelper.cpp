@@ -32,12 +32,11 @@
 #if defined(ARDUINO)
 
 
-
+// regdump does not call Wire.begin, you need to call it before using regdump
 int SensorWireHelper::regdump(TwoWire &w, Stream &serial, uint8_t devAddr, uint8_t start, uint8_t length)
 {
     uint8_t *buffer =  (uint8_t *)malloc(length);
     if (!buffer) return -1;
-    w.begin();
     w.beginTransmission(devAddr);
     w.write(start);
     if (w.endTransmission() != 0) {
@@ -61,26 +60,34 @@ void SensorWireHelper::dumpDevices(TwoWire &w, Stream &serial, int first, int la
 {
     int i, j;
     int ret;
-    serial.printf("     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f\n");
+    serial.println("     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f");
     for (i = 0; i < 128; i += 16) {
-        serial.printf("%02x: ", i);
-
+        if (i < 16) {
+            serial.print("0");
+        }
+        serial.print(i, HEX);
+        serial.print(": ");
         for (j = 0; j < 16; j++) {
             /* Skip unwanted addresses */
             if (i + j < first || i + j > last) {
-                serial.printf("   ");
+                serial.print("   ");
                 continue;
             }
 
             w.beginTransmission(i + j);
             ret = w.endTransmission();
 
-            if (ret != 0)
-                serial.printf("-- ");
-            else
-                serial.printf("%02x ", i + j);
+            if (ret != 0) {
+                serial.print("-- ");
+            } else {
+                if (i < 16) {
+                    serial.print("0");
+                }
+                serial.print(i + j, HEX);
+                serial.print(" ");
+            }
         }
-        serial.printf("\n");
+        serial.println();
     }
 }
 
@@ -88,29 +95,29 @@ void SensorWireHelper::dumpDevices(TwoWire &w, Stream &serial, int first, int la
 void SensorWireHelper::hexdump(uint8_t *data, size_t len, Stream &serial)
 {
     size_t rem_len = len;
-    for (int i = 0; i < len; i += 16) {
+    for (size_t i = 0; i < len; i += 16) {
         char str[80];
         snprintf(str, 80, "%07x  ", i);
         size_t line_len = 16;
         if (rem_len < line_len) {
             line_len = rem_len;
         }
-        for (int j = 0; j < line_len; j++) {
+        for (size_t j = 0; j < line_len; j++) {
             snprintf(&str[8 + j * 3], 80, "%02x ", data[i + j]);
         }
-        for (int j = line_len; j < 16; j++) {
+        for (size_t j = line_len; j < 16; j++) {
             snprintf(&str[8 + j * 3], 80, "   ");
         }
         str[56] = '|';
         str[57] = ' ';
-        for (int j = 0; j < line_len; j++) {
+        for (size_t j = 0; j < line_len; j++) {
             char c = data[i + j];
             if ((c < ' ') || (c > '~')) {
                 c = '.';
             }
             snprintf(&str[58 + j], 80, "%c", c);
         }
-        for (int j = line_len; j < 16; j++) {
+        for (size_t j = line_len; j < 16; j++) {
             snprintf(&str[58 + j], 80, "   ");
         }
         serial.println(str);

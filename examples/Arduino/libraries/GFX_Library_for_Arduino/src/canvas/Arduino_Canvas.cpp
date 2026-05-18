@@ -574,7 +574,7 @@ void Arduino_Canvas::draw16bitBeRGBBitmap(int16_t x, int16_t y,
   }
 }
 
-void Arduino_Canvas::flush()
+void Arduino_Canvas::flush(bool force_flush)
 {
   if (_output)
   {
@@ -582,7 +582,7 @@ void Arduino_Canvas::flush()
   }
 }
 
-void Arduino_Canvas::flushQuad(void)
+void Arduino_Canvas::flushQuad(bool force_flush)
 {
   int16_t y = _output_y;
   uint16_t *row1 = _framebuffer;
@@ -610,6 +610,46 @@ void Arduino_Canvas::flushQuad(void)
       row1 += WIDTH;
       row2 += WIDTH;
     }
+  }
+}
+
+void Arduino_Canvas::shade(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t shade_mask)
+{
+  if (_rotation > 0)
+  {
+    int16_t t = x;
+    switch (_rotation)
+    {
+    case 1:
+      x = WIDTH - y - h;
+      y = t;
+      t = w;
+      w = h;
+      h = t;
+      break;
+    case 2:
+      x = WIDTH - x - w;
+      y = HEIGHT - y - h;
+      break;
+    case 3:
+      x = y;
+      y = HEIGHT - t - w;
+      t = w;
+      w = h;
+      h = t;
+      break;
+    }
+  }
+  uint16_t *row = _framebuffer;
+  row += y * WIDTH;
+  row += x;
+  for (int j = 0; j < h; j++)
+  {
+    for (int i = 0; i < w; i++)
+    {
+      row[i] &= shade_mask;
+    }
+    row += WIDTH;
   }
 }
 

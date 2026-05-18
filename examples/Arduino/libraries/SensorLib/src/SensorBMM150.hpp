@@ -28,24 +28,20 @@
  * @note      Most source code references come from the https://github.com/boschsensortec/BMM150-Sensor-API
  *            Simplification for Arduino
  */
+#pragma once
 
-#include "bosch/common/bosch_interfaces.h"
+#include "platform/comm/ComplexStaticDeviceWithHal.hpp"
 #include "bosch/BMM150/bmm150.h"
-#include "bosch/SensorBhy2Define.h"
-
-#if defined(ARDUINO)
 
 /*! @name I2C ADDRESS       */
-#define BMM150_DEFAULT_I2C_ADDRESS                UINT8_C(0x10)
-#define BMM150_I2C_ADDRESS_CSB_LOW_SDO_HIGH       UINT8_C(0x11)
-#define BMM150_I2C_ADDRESS_CSB_HIGH_SDO_LOW       UINT8_C(0x12)
-#define BMM150_I2C_ADDRESS_CSB_HIGH_SDO_HIGH      UINT8_C(0x13)
+static constexpr uint8_t BMM150_DEFAULT_I2C_ADDRESS = (0x10);
+static constexpr uint8_t BMM150_I2C_ADDRESS_CSB_LOW_SDO_HIGH = (0x11);
+static constexpr uint8_t BMM150_I2C_ADDRESS_CSB_HIGH_SDO_LOW = (0x12);
+static constexpr uint8_t BMM150_I2C_ADDRESS_CSB_HIGH_SDO_HIGH = (0x13);
 
-
-class SensorBMM150
+class SensorBMM150 : public ComplexStaticDeviceWithHal
 {
 public:
-
     enum  PowerMode {
         POWERMODE_NORMAL,
         POWERMODE_FORCED,
@@ -58,88 +54,26 @@ public:
         INTERRUPT_LOW_ACTIVE,
     };
 
-    SensorBMM150(PLATFORM_WIRE_TYPE &w, int sda = DEFAULT_SDA, int scl = DEFAULT_SCL, uint8_t addr = BMM150_DEFAULT_I2C_ADDRESS)
+    SensorBMM150():  dev(nullptr), _rst(-1), _error_code(0)
     {
-        __handler.u.i2c_dev.scl = scl;
-        __handler.u.i2c_dev.sda = sda;
-        __handler.u.i2c_dev.addr = addr;
-        __handler.u.i2c_dev.wire = &w;
-        __handler.intf = SENSORLIB_I2C_INTERFACE;
     }
 
-    SensorBMM150(int cs, int mosi = -1, int miso = -1, int sck = -1, PLATFORM_SPI_TYPE &spi = SPI )
-    {
-        __handler.u.spi_dev.cs = cs;
-        __handler.u.spi_dev.miso = miso;
-        __handler.u.spi_dev.mosi = mosi;
-        __handler.u.spi_dev.sck = sck;
-        __handler.u.spi_dev.spi = &spi;
-        __handler.intf = SENSORLIB_SPI_INTERFACE;
-    }
+    ~SensorBMM150() = default;
 
-    ~SensorBMM150()
+    void setPins(int rst)
     {
-        deinit();
-    }
-
-    SensorBMM150()
-    {
-        memset(&__handler, 0, sizeof(__handler));
-    }
-
-    void setPins(int rst, int irq)
-    {
-        __handler.irq = irq;
-        __handler.rst = rst;
-
-    }
-
-    bool init(PLATFORM_WIRE_TYPE &w, int sda = DEFAULT_SDA, int scl = DEFAULT_SCL, uint8_t addr = BMM150_DEFAULT_I2C_ADDRESS)
-    {
-        __handler.u.i2c_dev.scl = scl;
-        __handler.u.i2c_dev.sda = sda;
-        __handler.u.i2c_dev.addr = addr;
-        __handler.u.i2c_dev.wire = &w;
-        __handler.intf = SENSORLIB_I2C_INTERFACE;
-        return initImpl();
-    }
-
-    bool init( PLATFORM_SPI_TYPE &spi, int cs, int mosi = MOSI, int miso = MISO, int sck = SCK)
-    {
-        __handler.u.spi_dev.cs = cs;
-        __handler.u.spi_dev.miso = miso;
-        __handler.u.spi_dev.mosi = mosi;
-        __handler.u.spi_dev.sck = sck;
-        __handler.u.spi_dev.spi = &spi;
-        __handler.intf = SENSORLIB_SPI_INTERFACE;
-        return initImpl();
-    }
-
-    bool init()
-    {
-        return initImpl();
-    }
-
-    void deinit()
-    {
-        if (dev) {
-            free(dev);
-            dev = NULL;
-        }
-        if (__handler.irq != SENSOR_PIN_NONE) {
-            detachInterrupt(__handler.irq);
-        }
+        _rst = rst;
     }
 
     void reset()
     {
-        if (__handler.rst != SENSOR_PIN_NONE) {
-            digitalWrite(__handler.rst, HIGH);
-            delay(5);
-            digitalWrite(__handler.rst, LOW);
-            delay(10);
-            digitalWrite(__handler.rst, HIGH);
-            delay(5);
+        if (_rst != -1) {
+            hal->digitalWrite(_rst, HIGH);
+            hal->delay(5);
+            hal->digitalWrite(_rst, LOW);
+            hal->delay(10);
+            hal->digitalWrite(_rst, HIGH);
+            hal->delay(5);
         }
     }
 
@@ -151,44 +85,44 @@ public:
     bool setMode(PowerMode mode)
     {
         settings.pwr_mode = mode;
-        return  bmm150_set_op_mode(&settings, dev) == BMM150_OK;
+        return  bmm150_set_op_mode(&settings, dev.get()) == BMM150_OK;
     }
 
     bool setThreshold(uint8_t high_th, uint8_t low_th)
     {
         settings.int_settings.high_threshold = high_th;
         settings.int_settings.low_threshold = low_th;
-        return bmm150_set_sensor_settings(BMM150_SEL_HIGH_THRESHOLD_SETTING, &settings, dev) == BMM150_OK;
+        return bmm150_set_sensor_settings(BMM150_SEL_HIGH_THRESHOLD_SETTING, &settings, dev.get()) == BMM150_OK;
     }
 
     bool setInterruptLevel(InterruptLevel level)
     {
         settings.int_settings.high_int_en = level;
-        return bmm150_set_sensor_settings(BMM150_SEL_HIGH_THRESHOLD_INT, &settings, dev) == BMM150_OK;
+        return bmm150_set_sensor_settings(BMM150_SEL_HIGH_THRESHOLD_INT, &settings, dev.get()) == BMM150_OK;
     }
 
     bool enableINT()
     {
         settings.int_settings.int_pin_en = BMM150_INT_ENABLE;
-        return bmm150_set_sensor_settings(BMM150_SEL_INT_PIN_EN, &settings, dev) == BMM150_OK;
+        return bmm150_set_sensor_settings(BMM150_SEL_INT_PIN_EN, &settings, dev.get()) == BMM150_OK;
     }
 
     bool disableINT()
     {
         settings.int_settings.int_pin_en = BMM150_INT_DISABLE;
-        return bmm150_set_sensor_settings(BMM150_SEL_INT_PIN_EN, &settings, dev) == BMM150_OK;
+        return bmm150_set_sensor_settings(BMM150_SEL_INT_PIN_EN, &settings, dev.get()) == BMM150_OK;
     }
 
-    bool enabledDtatReady()
+    bool enabledDataReady()
     {
         settings.int_settings.drdy_pin_en = BMM150_INT_ENABLE;
-        return bmm150_set_sensor_settings(BMM150_SEL_DRDY_PIN_EN, &settings, dev) == BMM150_OK;
+        return bmm150_set_sensor_settings(BMM150_SEL_DRDY_PIN_EN, &settings, dev.get()) == BMM150_OK;
     }
 
-    bool disabledDtatReady()
+    bool disabledDataReady()
     {
         settings.int_settings.drdy_pin_en = BMM150_INT_DISABLE;
-        return bmm150_set_sensor_settings(BMM150_SEL_DRDY_PIN_EN, &settings, dev) == BMM150_OK;
+        return bmm150_set_sensor_settings(BMM150_SEL_DRDY_PIN_EN, &settings, dev.get()) == BMM150_OK;
     }
 
     uint8_t getChipID()
@@ -196,9 +130,9 @@ public:
         return dev->chip_id;
     }
 
-    uint8_t getInterruptStatus()
+    uint8_t getIrqStatus()
     {
-        bmm150_get_interrupt_status(dev);
+        bmm150_get_interrupt_status(dev.get());
         return dev->int_status;
     }
 
@@ -219,15 +153,15 @@ public:
 
     struct bmm150_mag_data getMag()
     {
-        struct bmm150_mag_data data = {0};
-        bmm150_read_mag_data(&data, dev);
+        struct bmm150_mag_data data = {0, 0, 0};
+        bmm150_read_mag_data(&data, dev.get());
         return data;
     }
 
     bool getMag(int16_t &x, int16_t &y, int16_t &z)
     {
         struct bmm150_mag_data data;
-        if (bmm150_read_mag_data(&data, dev) != BMM150_OK) {
+        if (bmm150_read_mag_data(&data, dev.get()) != BMM150_OK) {
             return false;
         }
         x = data.x;
@@ -238,94 +172,52 @@ public:
 
 private:
 
-    static void IRAM_ATTR handleISR(void *available)
-    {
-        *(bool *)(available) = true;
-    }
-
-    bool initImpl()
+    bool initImpl(uint8_t param) override
     {
         memset(&settings, 0, sizeof(settings));
 
-        if (__handler.rst != SENSOR_PIN_NONE) {
-            pinMode(__handler.rst, OUTPUT);
+        if (_rst != -1) {
+            hal->pinMode(_rst, OUTPUT);
         }
 
         reset();
 
-        dev = (struct bmm150_dev *)malloc(sizeof(struct bmm150_dev));
-        BHY2_RLST_CHECK(!dev, " Device handler malloc failed!", false);
+        dev = std::make_unique<struct bmm150_dev>();
+        if (!dev) {
+            log_e(" Device handler malloc failed!");
+            return false;
+        }
 
-        switch (__handler.intf) {
-        case SENSORLIB_I2C_INTERFACE:
-            BHY2_RLST_CHECK(!__handler.u.i2c_dev.wire, "Wire ptr NULL", false);
-            if (!SensorInterfaces::setup_interfaces(__handler)) {
-                log_e("setup_interfaces failed");
-                free(dev);
-                return false;
-            }
+        switch (_iface) {
+        case COMM_I2C:
             dev->intf = BMM150_I2C_INTF;
-            dev->read = SensorInterfaces::bhy2_i2c_read;
-            dev->write = SensorInterfaces::bhy2_i2c_write;
-            dev->intf_ptr = &__handler;
             break;
-
-        case SENSORLIB_SPI_INTERFACE:
-            BHY2_RLST_CHECK(!__handler.u.spi_dev.spi, "SPI ptr NULL", false);
-            if (!SensorInterfaces::setup_interfaces(__handler)) {
-                log_e("setup_interfaces failed");
-                free(dev);
-                return false;
-            }
-            dev->intf = BMM150_I2C_INTF;
-            dev->read = SensorInterfaces::bhy2_spi_read;
-            dev->write = SensorInterfaces::bhy2_spi_write;
-            dev->intf_ptr = &__handler;
+        case COMM_SPI:
+            dev->intf = BMM150_SPI_INTF;
             break;
         default:
-            free(dev);
             return false;
         }
+        dev->read = SensorCommStatic::sensor_static_read_data;
+        dev->write = SensorCommStatic::sensor_static_write_data;
+        dev->intf_ptr = staticComm.get();
+        dev->delay_us = SensorCommStatic::sensor_static_delay_us;
 
-        dev->delay_us = SensorInterfaces::bhy2_delay_us;
-        __error_code = bmm150_init(dev);
-        if (__error_code != BMM150_OK) {
-            log_e("bmm150 init failed!");
-            free(dev);
+        _error_code = bmm150_init(dev.get());
+        if (_error_code != BMM150_OK) {
             return false;
         }
-
-        __error_code = bmm150_soft_reset(dev);
-        if (__error_code != BMM150_OK) {
-            log_e("reset failed!");
-            free(dev);
+        _error_code = bmm150_soft_reset(dev.get());
+        if (_error_code != BMM150_OK) {
             return false;
         }
-
-        bmm150_get_sensor_settings(&settings, dev);
-
-        if (__handler.irq != SENSOR_PIN_NONE) {
-#if defined(ARDUINO_ARCH_RP2040)
-            attachInterruptParam((pin_size_t)(__handler.irq), handleISR, (PinStatus )RISING, (void *)&__data_available);
-#else
-            attachInterruptArg(__handler.irq, handleISR, (void *)&__data_available, RISING);
-#endif
-        }
-
-        return __error_code == BMM150_OK;
+        bmm150_get_sensor_settings(&settings, dev.get());
+        return _error_code == BMM150_OK;
     }
 
-protected:
-    struct bmm150_settings settings;
-    struct bmm150_dev *dev = NULL;
-    SensorLibConfigure __handler;
-    int8_t           __error_code;
-    volatile bool    __data_available;
+    std::unique_ptr<struct bmm150_dev> dev;
+    int                     _rst;
+    int8_t                  _error_code;
+    struct bmm150_settings  settings;
+
 };
-
-
-#endif /*defined(ARDUINO)*/
-
-
-
-
