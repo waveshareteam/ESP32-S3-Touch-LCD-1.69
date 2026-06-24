@@ -1,35 +1,36 @@
-# Waveshare ESP32-S3-Touch-LCD-1.69 产品仓库
+# Waveshare ESP32-S3-Touch-LCD-1.69
 
 [English](README.md)
 
-ESP32-S3-Touch-LCD-1.69 集成了 1.69 英寸电容触摸屏、IMU、RTC、蜂鸣器、电池管理和扩展接口，提供 Arduino 与 ESP-IDF 示例程序，覆盖 LCD、触摸、传感器、RTC 和 LVGL 演示，助您轻松打造紧凑型智能人机交互终端。
+ESP32-S3-Touch-LCD-1.69 是一款基于 ESP32-S3R8（双核 Xtensa LX7 @ 240 MHz，8 MB PSRAM，16 MB Flash）的紧凑型人机交互开发板，支持 2.4 GHz Wi-Fi 和 Bluetooth 5 LE。板载 1.69 英寸 240 × 280 电容触摸 LCD（ST7789V2 + CST816T）、QMI8658C 六轴 IMU、PCF85063 RTC、蜂鸣器、锂电池充放电管理、USB Type-C 以及 UART/GPIO 扩展接口，适用于打造紧凑型智能终端、可穿戴设备和交互控制面板。Arduino 与 ESP-IDF 示例覆盖 LCD、触摸、传感器、RTC 和 LVGL 演示。
 
 - [购买链接](https://www.waveshare.net/shop/ESP32-S3-Touch-LCD-1.69.htm)
 - [产品文档](https://docs.waveshare.net/ESP32-S3-Touch-LCD-1.69/)
 
 <img src="assets/540px-ESP32-S3-Touch-LCD-1.69-details-1.jpg" alt="Waveshare ESP32-S3-Touch-LCD-1.69" width="500">
 
----
+## 仓库结构
 
-## 🚀 快速开始
+本仓库提供 ESP32-S3-Touch-LCD-1.69 的示例程序、Arduino 库、出厂固件和硬件设计文件。
 
-详细的配置与使用说明请参阅[产品文档](https://docs.waveshare.net/ESP32-S3-Touch-LCD-1.69/)。
+```
+.
+├── assets/                # README 使用的产品图片
+├── examples/              # 示例程序
+│   ├── Arduino/           # Arduino 示例与内置库
+│   └── ESP-IDF/           # ESP-IDF 工程
+├── firmware/              # 预编译出厂固件（.bin）
+├── hardware/              # 原理图、引脚图和尺寸图
+└── HARDWARE_REFERENCE.md  # 硬件速查文件
+```
 
-硬件详情请参考 [HARDWARE_REFERENCE_ZH.md](HARDWARE_REFERENCE_ZH.md) —— 这是一份面向开发者和 AI 编程工具的结构化速查文档，涵盖板载外设、GPIO 分配、I2C 地址和扩展接口信号。
+## 快速开始
 
----
+预编译固件位于 [`firmware/`](firmware)。构建环境、烧录步骤、引脚映射及配置说明请参阅[产品文档页面](https://docs.waveshare.net/ESP32-S3-Touch-LCD-1.69/)。
 
-## 📁 仓库目录
+如需面向开发者和 AI 编程工具的结构化硬件速查（涵盖板载外设、GPIO 分配、I2C 地址和扩展接口信号），请参考 [HARDWARE_REFERENCE_ZH.md](HARDWARE_REFERENCE_ZH.md)。
 
-- `assets`：README 使用的产品图片。
-- `examples`：各开发框架的示例程序。
-- `firmware`：出厂固件二进制文件。
-- `hardware`：硬件设计文件（原理图、引脚图等）。
-- `HARDWARE_REFERENCE_ZH.md`：中文硬件速查文件。
-
----
-
-## 🛠️ 贡献
+## 贡献
 
 我们欢迎您的贡献！您可以通过以下方式提供帮助：
 
@@ -38,30 +39,13 @@ ESP32-S3-Touch-LCD-1.69 集成了 1.69 英寸电容触摸屏、IMU、RTC、蜂�
 3. 提交您的更改并附上清晰的描述。
 4. 提交 Pull Request 以供审核。
 
----
+## 问题与支持
 
-## 🧩 问题与支持
+请创建 [Issue](https://gitee.com/waveshare/esp32-s3-touch-lcd-1.69/issues) 并提供详细信息，或联系微雪团队并提供订单号以获取技术支持。
 
-如果您遇到任何问题：
+## 许可
 
-- 请先查看 [Issues](https://gitee.com/waveshare/esp32-s3-touch-lcd-1.69/issues) 版块。
-- 创建一个新的 Issue 并提供详细信息。
-- 参考文档获取故障排除提示。
-- 联系微雪团队并提供订单号以获取技术支持。
-
----
-
-## 📜 许可
-
-本仓库遵循 Apache License 许可。详情请参阅 [LICENSE](LICENSE) 文件。
-
----
-
-## 🙌 致谢
-
-- 感谢微雪电子提供的优秀硬件平台和软件支持。
-- 感谢乐鑫团队的持续支持。
-- 感谢让这些项目成为可能的开源贡献者。
+本仓库遵循 Apache License 2.0 许可。详情请参阅 [LICENSE](LICENSE) 文件。
 
 ---
 
