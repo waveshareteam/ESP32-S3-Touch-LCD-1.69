@@ -1,0 +1,99 @@
+name: Arduino examples
+
+on:
+  push:
+    paths:
+      - ".github/workflows/arduino.yml"
+      - "examples/Arduino/examples/**"
+      - "examples/Arduino/libraries/**"
+      - "examples/arduino/examples/**"
+      - "examples/arduino/libraries/**"
+      - "scripts/ci/**"
+  pull_request:
+    paths:
+      - ".github/workflows/arduino.yml"
+      - "examples/Arduino/examples/**"
+      - "examples/Arduino/libraries/**"
+      - "examples/arduino/examples/**"
+      - "examples/arduino/libraries/**"
+      - "scripts/ci/**"
+  workflow_dispatch:
+    inputs:
+      sketch:
+        description: "all, a sketch name, or a repo-relative path"
+        default: "all"
+        required: true
+
+env:
+  ARDUINO_CORE_VERSION: "3.3.10"
+  ARDUINO_FQBN: "esp32:esp32:esp32s3"
+
+jobs:
+  discover:
+    name: Discover Arduino sketches
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.discover.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: discover
+        shell: bash
+        run: |
+          matrix="$(python scripts/ci/discover_examples.py arduino --filter '${{ inputs.sketch || 'all' }}')"
+          echo "matrix=${matrix}" >> "${GITHUB_OUTPUT}"
+          echo "${matrix}"
+
+  build:
+    name: ${{ matrix.sketch.name }}
+    needs: discover
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sketch: ${{ fromJSON(needs.discover.outputs.matrix).include }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Arduino CLI
+        uses: arduino/setup-arduino-cli@v2
+
+      - name: Install ESP32 board package
+        shell: bash
+        run: |
+          arduino-cli config init --overwrite
+          arduino-cli config add board_manager.additional_urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+          arduino-cli core update-index
+          arduino-cli core install "esp32:esp32@${ARDUINO_CORE_VERSION}"
+
+      - name: Compile sketch
+        shell: bash
+        run: |
+          library_root="examples/Arduino/libraries"
+          if [ -d "examples/arduino/libraries" ]; then
+            library_root="examples/arduino/libraries"
+          fi
+          build_dir="build/arduino/${{ matrix.sketch.name }}"
+          arduino-cli compile \
+            --fqbn "${ARDUINO_FQBN}" \
+            --libraries "${library_root}" \
+            --export-binaries \
+            --output-dir "${build_dir}" \
+            "${{ matrix.sketch.path }}"
+
+      - name: Package flashable firmware
+        shell: bash
+        run: |
+          python scripts/ci/package_arduino_artifact.py \
+            --sketch '${{ matrix.sketch.path }}' \
+            --build-dir 'build/arduino/${{ matrix.sketch.name }}' \
+            --output-dir releases/dist/arduino \
+            --core-version "${ARDUINO_CORE_VERSION}" \
+            --fqbn "${ARDUINO_FQBN}" \
+            --target esp32s3
+
+      - name: Upload firmware artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: arduino-${{ matrix.sketch.name }}
+          path: releases/dist/arduino/*.zip
+          if-no-files-found: error

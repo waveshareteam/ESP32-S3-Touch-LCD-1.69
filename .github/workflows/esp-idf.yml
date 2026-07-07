@@ -1,0 +1,76 @@
+name: ESP-IDF examples
+
+on:
+  push:
+    paths:
+      - ".github/workflows/esp-idf.yml"
+      - "config/**"
+      - "examples/ESP-IDF/**"
+      - "examples/esp-idf/**"
+      - "scripts/ci/**"
+  pull_request:
+    paths:
+      - ".github/workflows/esp-idf.yml"
+      - "config/**"
+      - "examples/ESP-IDF/**"
+      - "examples/esp-idf/**"
+      - "scripts/ci/**"
+  workflow_dispatch:
+    inputs:
+      example:
+        description: "all, an example name, or a repo-relative path"
+        default: "all"
+        required: true
+
+jobs:
+  discover:
+    name: Discover ESP-IDF examples
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.discover.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: discover
+        shell: bash
+        run: |
+          matrix="$(python scripts/ci/discover_examples.py idf --filter '${{ inputs.example || 'all' }}')"
+          echo "matrix=${matrix}" >> "${GITHUB_OUTPUT}"
+          echo "${matrix}"
+
+  build:
+    name: ${{ matrix.idf_version }} / ${{ matrix.example.name }}
+    needs: discover
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        idf_version:
+          - v5.5.4
+          - v6.0.2
+        example: ${{ fromJSON(needs.discover.outputs.matrix).include }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build with ESP-IDF
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: ${{ matrix.idf_version }}
+          target: esp32s3
+          path: ${{ matrix.example.path }}
+
+      - name: Package flashable firmware
+        shell: bash
+        run: |
+          python scripts/ci/package_idf_artifact.py \
+            --project '${{ matrix.example.path }}' \
+            --build-dir '${{ matrix.example.path }}/build' \
+            --output-dir releases/dist/esp-idf \
+            --idf-version '${{ matrix.idf_version }}' \
+            --target esp32s3
+
+      - name: Upload firmware artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: esp-idf-${{ matrix.idf_version }}-${{ matrix.example.name }}
+          path: releases/dist/esp-idf/*.zip
+          if-no-files-found: error

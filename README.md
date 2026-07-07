@@ -15,12 +15,16 @@ This repository provides sample programs, bundled Arduino libraries, factory fir
 
 ```
 .
+├── .github/workflows/     # CI for ESP-IDF and Arduino examples
 ├── assets/                # Product images used in the README
+├── config/                # Shared ESP-IDF configuration overlays
+├── docs/                  # CI, firmware, and component notes
 ├── examples/              # Sample programs
 │   ├── Arduino/           # Arduino sketches and bundled libraries
 │   └── ESP-IDF/           # ESP-IDF projects
 ├── firmware/              # Pre-built factory firmware (.bin)
 ├── hardware/              # Schematics, pinout, and dimension drawings
+├── releases/              # CI artifact packaging notes and ignored outputs
 └── HARDWARE_REFERENCE.md  # Hardware quick reference
 ```
 
@@ -29,6 +33,10 @@ This repository provides sample programs, bundled Arduino libraries, factory fir
 Pre-built firmware is available in [`firmware/`](firmware). For build environments, flashing steps, pin mappings, and configuration, refer to the [documentation page](https://docs.waveshare.com/ESP32-S3-Touch-LCD-1.69).
 
 For a structured hardware reference designed for both developers and AI coding assistants — covering onboard peripherals, GPIO assignments, I2C addresses, and expansion interface signals — see [HARDWARE_REFERENCE.md](HARDWARE_REFERENCE.md).
+
+## Continuous Integration
+
+GitHub Actions validates the first-party ESP-IDF and Arduino examples. Bundled-library internal examples are intentionally excluded from product CI. See [docs/ci.md](docs/ci.md), [docs/firmware.md](docs/firmware.md), and [docs/components.md](docs/components.md) for the CI matrix, firmware artifact policy, and component migration notes.
 
 ## Contributing
 
