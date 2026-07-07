@@ -1,12 +1,14 @@
-# Firmware
+# Firmware Artifacts
 
-The `firmware/` directory contains a pre-built factory image for flashing and recovery. The factory firmware source is not part of this repository, so factory binaries are documented artifacts rather than build CI inputs.
+`firmware/` contains the factory binary artifact for user flashing and recovery flows. This binary is not a source project and is not built by CI.
 
-Source-built CI firmware comes only from maintained examples:
+Source-maintained firmware lives under the example trees and is built by `.github/workflows/examples.yml`:
 
-- ESP-IDF projects under `examples/ESP-IDF/` or `examples/esp-idf/`
-- Arduino sketches under `examples/Arduino/examples/` or `examples/arduino/examples/`
+- ESP-IDF projects under `examples/esp-idf/`.
+- Arduino sketches under `examples/arduino/`.
 
-CI uploads successful source-built outputs as workflow artifacts. The packaged archive contains a manifest, binaries, and simple flash helpers. These generated archives belong in CI artifact storage, not in source control.
+CI build outputs are packaged by `releases/package_firmware.py` and uploaded as workflow artifacts. The generated zip contains `manifest.json`, flash helper scripts, flash arguments, and the binaries needed by esptool.
 
-Use the factory binary when you need to restore the board to the released factory state. Use CI-generated artifacts when validating a specific example build from this repository.
+Use the factory binary when restoring the board to the released factory state. Use CI-generated artifacts when validating a specific example build from this repository.
+
+For local release packaging, build the target project first and run the Python script from the repository root. Generated archives are written under `releases/dist/` by default.

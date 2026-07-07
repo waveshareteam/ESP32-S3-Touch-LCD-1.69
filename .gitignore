@@ -4,13 +4,21 @@
 # VS Code
 .vscode/
 
-# ESP-IDF
+# ESP-IDF generated files
 build/
+**/build/
 sdkconfig
 sdkconfig.old
 managed_components/
+**/managed_components/
 dependencies.lock
+**/dependencies.lock
 
-# AI
+# Release package output
+releases/dist/
+release-artifacts/
+releases/downloads/
+
+# Local workspace metadata
 .codex/
 .claude/

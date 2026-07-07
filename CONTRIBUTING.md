@@ -11,9 +11,9 @@ Thanks for improving this repository.
 
 ## Examples And Libraries
 
-- Product ESP-IDF examples live under `examples/ESP-IDF/`.
-- Product Arduino sketches live under `examples/Arduino/examples/`.
-- Bundled Arduino libraries live under `examples/Arduino/libraries/`.
+- Product ESP-IDF examples live under `examples/esp-idf/`.
+- Product Arduino sketches live under `examples/arduino/`.
+- Bundled Arduino libraries live under `examples/arduino/libraries/`.
 - Bundled-library internal examples are not part of product CI unless a change explicitly targets library-level validation.
 
 ## Firmware
