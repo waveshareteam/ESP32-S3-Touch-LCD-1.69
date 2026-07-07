@@ -60,6 +60,48 @@ def copy_file(src: Path, firmware_dir: Path, offset: str | None = None) -> str:
     return f"bin/{dst_name}"
 
 
+def write_padding(output, size: int) -> None:
+    chunk = b"\xff" * 4096
+    while size > 0:
+        count = min(size, len(chunk))
+        output.write(chunk[:count])
+        size -= count
+
+
+def create_combined_bin(
+    package_dir: Path,
+    firmware_dir: Path,
+    artifact_name: str,
+    entries: list[dict[str, str]],
+) -> str:
+    if not entries:
+        raise ValueError("no firmware entries available to combine")
+
+    segments: list[tuple[int, Path, dict[str, str]]] = []
+    for entry in entries:
+        offset = parse_offset(entry["offset"])
+        src = package_dir / entry["file"]
+        if not src.exists():
+            raise FileNotFoundError(f"missing firmware segment: {src}")
+        segments.append((offset, src, entry))
+
+    combined_name = slugify(f"{artifact_name}.combined.bin")
+    combined_path = firmware_dir / combined_name
+    position = 0
+    with combined_path.open("wb") as output:
+        for offset, src, entry in sorted(segments, key=lambda item: item[0]):
+            if offset < position:
+                raise ValueError(
+                    f"firmware segment {entry['file']} at {entry['offset']} overlaps a previous segment"
+                )
+            write_padding(output, offset - position)
+            with src.open("rb") as source:
+                shutil.copyfileobj(source, output)
+            position = offset + src.stat().st_size
+
+    return f"bin/{combined_name}"
+
+
 def esp_idf_flash_entries(build_dir: Path, firmware_dir: Path) -> tuple[list[str], list[dict[str, str]], dict]:
     flasher_args_path = build_dir / "flasher_args.json"
     if not flasher_args_path.exists():
@@ -218,19 +260,22 @@ def package(args: argparse.Namespace) -> Path:
     firmware_dir.mkdir(parents=True, exist_ok=True)
 
     if args.framework == "esp-idf":
-        command_pairs, files, flasher_args = esp_idf_flash_entries(build_dir, firmware_dir)
+        _command_pairs, segment_files, flasher_args = esp_idf_flash_entries(build_dir, firmware_dir)
         extra_args = flasher_args.get("extra_esptool_args", {})
         chip = args.target or extra_args.get("chip") or "esp32s3"
         before = extra_args.get("before", "default_reset")
         after = extra_args.get("after", "hard_reset")
         write_flash_args = [str(item) for item in flasher_args.get("write_flash_args", [])]
     else:
-        command_pairs, files = arduino_flash_entries(build_dir, firmware_dir)
+        _command_pairs, segment_files = arduino_flash_entries(build_dir, firmware_dir)
         chip = args.target or "esp32s3"
         before = "default_reset"
         after = "hard_reset"
         write_flash_args = []
 
+    combined_file = create_combined_bin(package_dir, firmware_dir, artifact_name, segment_files)
+    files = [{"offset": "0x0", "file": combined_file, "source": "combined firmware image"}]
+    command_pairs = ["0x0", combined_file]
     command = build_esptool_prefix(chip, before, after) + write_flash_args + command_pairs
     manifest = {
         "name": artifact_name,
@@ -241,7 +286,9 @@ def package(args: argparse.Namespace) -> Path:
         "git_sha": args.git_sha,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "baud": DEFAULT_BAUD,
+        "combined_bin": combined_file,
         "files": files,
+        "segments": segment_files,
         "flash_command": " ".join("<PORT>" if item == "$PORT" else item for item in command),
     }
     write_text(package_dir / "manifest.json", json.dumps(manifest, indent=2) + "\n")

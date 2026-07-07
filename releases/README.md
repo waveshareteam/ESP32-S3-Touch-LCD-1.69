@@ -16,7 +16,7 @@ python3 releases/package_firmware.py \
   --target esp32s3
 ```
 
-The script reads ESP-IDF's `flasher_args.json`, copies the required binary files, writes flash helper scripts, and creates a zip under `releases/dist/`.
+The script reads ESP-IDF's `flasher_args.json`, copies the required binary files, creates `bin/*.combined.bin`, writes flash helper scripts that flash the combined image at `0x0`, and creates a zip under `releases/dist/`.
 
 ## Arduino
 
@@ -38,7 +38,7 @@ python3 releases/package_firmware.py \
   --target esp32s3
 ```
 
-Each archive includes `manifest.json`, `flash.sh`, `flash.bat`, `flash_args.txt`, and the firmware binaries under `bin/`.
+Each archive includes `manifest.json`, `flash.sh`, `flash.bat`, `flash_args.txt`, `bin/*.combined.bin`, and the source segment binaries under `bin/`.
 
 ## CI Artifacts
 
@@ -51,7 +51,7 @@ flash.sh
 flash.bat
 flash_args.txt
 manifest.json
-bin/
+bin/*.combined.bin
 ```
 
 ## Download CI Artifacts
@@ -68,6 +68,6 @@ If `--run-id` is omitted, the script finds the latest successful `examples.yml` 
 python3 releases/download_artifacts.py --clean
 ```
 
-The extracted firmware is written to `releases/downloads/run-<run-id>/`. Each artifact gets its own folder, for example `firmware-esp-idf-02_ESP_IDF_ST7789_LVGL-v6.0.2/`, with `flash.sh`, `flash.bat`, `manifest.json`, and `bin/` ready for flashing.
+The extracted firmware is written to `releases/downloads/run-<run-id>/`. Each artifact gets its own folder, for example `firmware-esp-idf-02_ESP_IDF_ST7789_LVGL-v6.0.2/`, with `flash.sh`, `flash.bat`, `manifest.json`, and `bin/*.combined.bin` ready for flashing.
 
 Use `--artifact <name>` to download one firmware package, or `--pattern "firmware-esp-idf-*v6.0.2"` to filter by glob pattern. The script uses `GH_TOKEN`, `GITHUB_TOKEN`, or `gh auth token` for GitHub artifact access. When GitHub CLI is installed, artifact downloads use `gh run download` so `gh auth login` can be reused directly.
