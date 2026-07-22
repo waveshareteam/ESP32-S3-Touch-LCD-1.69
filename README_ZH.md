@@ -8,8 +8,8 @@
   </p>
   <p>
     <a href="README.md">English</a> ·
-    <a href="https://www.waveshare.com/esp32-s3-touch-lcd-1.69.htm">🌐 产品页面</a> ·
-    <a href="https://docs.waveshare.com/ESP32-S3-Touch-LCD-1.69">📚 产品文档</a> ·
+    <a href="https://www.waveshare.net/shop/ESP32-S3-Touch-LCD-1.69.htm">🌐 产品页面</a> ·
+    <a href="https://docs.waveshare.net/ESP32-S3-Touch-LCD-1.69/">📚 产品文档</a> ·
     <a href="https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/releases/latest">📦 固件发布</a> ·
     <a href="examples/esp-idf/">🧩 ESP-IDF 示例</a> ·
     <a href="examples/arduino/">🔧 Arduino 示例</a>
@@ -123,7 +123,7 @@
 
 ## 📚 文档
 
-- [产品文档](https://docs.waveshare.com/ESP32-S3-Touch-LCD-1.69)
+- [产品文档](https://docs.waveshare.net/ESP32-S3-Touch-LCD-1.69/)
 - [硬件参考](HARDWARE_REFERENCE_ZH.md)
 - [仓库结构](docs/repository-structure.md)
 - [持续集成](docs/ci.md)
