@@ -1,37 +1,28 @@
 ---
 name: Bug report
-about: Report a problem with an example, document, or firmware artifact
+about: Report a problem with a first-party example, document, or factory artifact
 labels: bug
 ---
 
 ## Summary
 
-Describe the problem.
+Describe the observed problem and its expected behavior.
 
-## Affected Path
+## Product and environment
 
-Example, document, or firmware path:
+- Board hardware revision (if known):
+- Affected example or repository path:
+- Framework and exact version (ESP-IDF or Arduino-ESP32):
+- Source-built CI artifact or factory recovery image:
+- Managed component or bundled library involved (if any):
 
-## Environment
-
-- Framework: ESP-IDF or Arduino
-- Version:
-- Board:
-
-## Steps To Reproduce
+## Reproduction
 
 1.
 2.
 3.
 
-## Expected Behavior
+## Actual result and evidence
 
-What should happen?
-
-## Actual Behavior
-
-What happened instead?
-
-## Logs Or Screenshots
-
-Paste the relevant CI log excerpt, serial output, or screenshot.
+Include relevant build/flash/serial logs, screenshots, and pin or BSP settings.
+Do not place sensitive security details in a public issue.

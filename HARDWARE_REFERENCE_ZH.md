@@ -1,5 +1,7 @@
 # ESP32-S3-Touch-LCD-1.69 硬件参考
 
+[English](HARDWARE_REFERENCE.md)
+
 > 给开发者、AI 工具使用的硬件速查文件。内容以官方 Wiki、原理图 V2.1 和当前工程引脚定义交叉整理。
 
 ## 1. 板卡概览

@@ -1,5 +1,7 @@
 # Contributing
 
+[简体中文](CONTRIBUTING_ZH.md)
+
 Thanks for improving this repository.
 
 ## Workflow
@@ -8,6 +10,11 @@ Thanks for improving this repository.
 2. Keep changes scoped to the affected example, documentation, workflow, or support file.
 3. Use repo-relative paths in reports and pull requests.
 4. Submit a pull request and use GitHub Actions as the validation record.
+
+Include the hardware revision, affected example and framework version, and the
+validation matrix. State any managed-component, pin/BSP, or factory-firmware
+impact and list remaining TODOs. Source-built CI artifacts and factory recovery
+firmware are different delivery surfaces.
 
 ## Examples And Libraries
 

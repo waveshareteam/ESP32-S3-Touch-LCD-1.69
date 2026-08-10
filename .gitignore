@@ -22,3 +22,7 @@ releases/downloads/
 # Local workspace metadata
 .codex/
 .claude/
+
+# Python test bytecode
+__pycache__/
+**/__pycache__/

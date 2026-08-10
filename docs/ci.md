@@ -1,18 +1,28 @@
-# CI
+# Continuous Integration
 
-The example workflow discovers build targets dynamically:
+[简体中文](ci_ZH.md)
 
-- ESP-IDF projects are discovered from `examples/esp-idf/*/CMakeLists.txt`.
-- Arduino sketches are discovered from `.ino` files under `examples/arduino/`.
-- Bundled-library examples under `examples/arduino/libraries/**` are excluded from product CI.
+The examples workflow always runs its lightweight classification and first-party
+Markdown checks. It uses a complete, rename-aware base-to-head diff; an empty
+or unavailable diff fails classification rather than selecting every build.
 
-`workflow_dispatch` accepts `all`, an example directory name, or a repo-relative path. This allows maintainers to run the full matrix or a single example.
+`scripts/ci_routing.py` routes each framework as `none`, `selected`, or `all`.
+Root Markdown, project Markdown, sketch Markdown, and bundled-library Markdown
+select no product builds. Direct first-party example source/config selects the
+affected project or sketch; shared Arduino libraries select all Arduino
+sketches; config, workflow, discovery, build, or packaging inputs select all
+applicable examples. Unknown complete non-document paths are conservatively
+reported and select all examples. Renames and deletions consider both paths.
 
-Current CI matrix:
+`firmware/` Markdown, source/configuration, binaries, and archives are reported
+as firmware/release evidence and remain outside the examples matrix.
+Documentation-only and governance-only changes therefore skip expensive builds
+by design while the lightweight job remains visible.
 
-- ESP-IDF `v5.5.4` and `v6.0.2`, target `esp32s3`.
-- Arduino-ESP32 core `3.3.10`, FQBN `esp32:esp32:esp32s3`, using bundled libraries from `examples/arduino/libraries/`.
+The full product matrix has 19 entries: four ESP-IDF projects on `v5.5.5` and
+`v6.0.2` (8 builds) plus 11 first-party Arduino sketches on Arduino-ESP32
+`3.3.11`. Bundled-library sketches are excluded. `workflow_dispatch` accepts
+`all`, a directory name, or a repository-relative example path.
 
-Each successful ESP-IDF and Arduino matrix build uploads a flashable firmware artifact. Download the artifact zip from the workflow run, extract it, then run `flash.sh` or `flash.bat` with the board serial port.
-
-If an example requires hardware, credentials, or an upstream component that is not yet compatible with a selected framework version, document the exclusion here before excluding it from CI.
+This lightweight gate runs static checks only. Local ESP-IDF and Arduino product
+builds are not part of it; hardware behavior still requires board testing.

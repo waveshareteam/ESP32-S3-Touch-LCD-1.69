@@ -1,21 +1,15 @@
 # Component Strategy
 
-The board has a managed Waveshare BSP available as `waveshare/esp32_s3_touch_lcd_1_69` in the ESP Component Registry. That BSP is the preferred long-term direction for reusable board, display, touch, and sensor support.
+[简体中文](components_ZH.md)
 
-Current source still contains local reusable code:
+The managed Waveshare BSP `waveshare/esp32_s3_touch_lcd_1_69` is the preferred
+long-term direction where equivalence is established. This repository retains
+the local ST7789 component in `01_ESP_IDF_ST7789` and SensorLib in `04_QMI8658`.
+Current registry/Waveshare evidence does not establish semantic and board-hardware
+equivalence for these uses, so neither is migrated or removed here.
 
-- `examples/esp-idf/01_ESP_IDF_ST7789/components/st7789`
-- `examples/esp-idf/04_QMI8658/components/SensorLib`
-- bundled Arduino libraries under `examples/arduino/libraries/`
-
-This update keeps those local copies in place to avoid rewriting example source before CI establishes a baseline. After the ESP-IDF and Arduino workflows are green, migrate reusable local pieces toward managed components in a separate change.
-
-Existing managed dependencies:
-
-- `esp_jpeg` in `examples/esp-idf/01_ESP_IDF_ST7789/main/idf_component.yml`
-- `espressif/esp_lcd_touch_cst816s`, `lvgl/lvgl`, and `espressif/esp_lvgl_port` in `examples/esp-idf/02_ESP_IDF_ST7789_LVGL/main/idf_component.yml`
-
-TODO:
-
-- Evaluate replacing the ST7789 and SensorLib local ESP-IDF components with managed dependencies after baseline CI results are available.
-- Keep Arduino bundled libraries in product CI as library paths only; do not compile their internal examples unless library-level CI is explicitly requested.
+Revisit a migration only with evidence for compatible component version, target
+and framework support, matching board pin behavior, and the required API
+semantics. A green CI compile alone is not evidence of hardware equivalence.
+Bundled Arduino libraries remain library paths for product sketches; their own
+upstream examples are not product CI targets.

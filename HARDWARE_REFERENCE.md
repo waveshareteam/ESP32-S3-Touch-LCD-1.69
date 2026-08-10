@@ -1,5 +1,7 @@
 # ESP32-S3-Touch-LCD-1.69 Hardware Reference
 
+[简体中文](HARDWARE_REFERENCE_ZH.md)
+
 > Hardware quick reference for developers and AI tools. The content is cross-checked against the official Wiki, schematic V2.1, and the pin definitions in the current project.
 
 ## 1. Board Overview

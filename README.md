@@ -104,9 +104,9 @@ library examples are intentionally excluded from the product CI matrix.
 
 | Surface | Version | Firmware builds |
 | --- | --- | ---: |
-| ESP-IDF | `v5.5.4` | 4 |
+| ESP-IDF | `v5.5.5` | 4 |
 | ESP-IDF | `v6.0.2` | 4 |
-| Arduino-ESP32 | `3.3.10` | 11 |
+| Arduino-ESP32 | `3.3.11` | 11 |
 
 The [Build Examples workflow](https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/actions/workflows/examples.yml)
 runs two discovery jobs and 19 firmware build jobs for the full matrix. Each

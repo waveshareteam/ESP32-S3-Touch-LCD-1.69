@@ -16,18 +16,21 @@ def normalize(value: str) -> str:
     return value.replace("\\", "/").strip("/")
 
 
-def selector_matches(entry: dict[str, str], selector: str) -> bool:
-    if not selector or selector == "all":
+def selector_matches(entry: dict[str, str], selectors: list[str]) -> bool:
+    if not selectors or "all" in selectors:
         return True
-    selector = normalize(selector)
     path = normalize(entry["path"])
     name = entry["name"]
-    return (
-        selector == name
-        or selector == path
-        or path.startswith(selector + "/")
-        or selector in path.split("/")
-    )
+    for selector in selectors:
+        selector = normalize(selector)
+        if (
+            selector == name
+            or selector == path
+            or path.startswith(selector + "/")
+            or selector in path.split("/")
+        ):
+            return True
+    return False
 
 
 def dedupe(entries: list[dict[str, str]]) -> list[dict[str, str]]:
@@ -69,13 +72,13 @@ def discover_arduino(repo: Path) -> list[dict[str, str]]:
 
 def build_matrix(args: argparse.Namespace) -> dict[str, list[dict[str, str]]]:
     repo = Path(args.repo).resolve()
-    selector = normalize(args.selector)
+    selectors = [normalize(item) for item in args.selector if normalize(item)]
     if args.surface == "esp-idf":
-        projects = [entry for entry in discover_esp_idf(repo) if selector_matches(entry, selector)]
+        projects = [entry for entry in discover_esp_idf(repo) if selector_matches(entry, selectors)]
         versions = [item.strip() for item in args.idf_versions.split(",") if item.strip()]
         include = [entry | {"idf": version} for entry in projects for version in versions]
     else:
-        sketches = [entry for entry in discover_arduino(repo) if selector_matches(entry, selector)]
+        sketches = [entry for entry in discover_arduino(repo) if selector_matches(entry, selectors)]
         include = [entry | {"core": args.arduino_core, "fqbn": args.fqbn} for entry in sketches]
     return {"include": include}
 
@@ -84,9 +87,9 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", default=".")
     parser.add_argument("--surface", choices=("esp-idf", "arduino"), required=True)
-    parser.add_argument("--selector", default="all")
-    parser.add_argument("--idf-versions", default="v5.5.4,v6.0.2")
-    parser.add_argument("--arduino-core", default="3.3.10")
+    parser.add_argument("--selector", action="append", default=[])
+    parser.add_argument("--idf-versions", default="v5.5.5,v6.0.2")
+    parser.add_argument("--arduino-core", default="3.3.11")
     parser.add_argument("--fqbn", default="esp32:esp32:esp32s3")
     parser.add_argument("--github-output")
     args = parser.parse_args()

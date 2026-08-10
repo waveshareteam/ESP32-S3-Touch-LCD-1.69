@@ -1,0 +1,6 @@
+{
+  "pair_exempt_patterns": [
+    ".github/ISSUE_TEMPLATE/bug_report.md",
+    ".github/pull_request_template.md"
+  ]
+}
