@@ -2,5 +2,27 @@
   "pair_exempt_patterns": [
     ".github/ISSUE_TEMPLATE/bug_report.md",
     ".github/pull_request_template.md"
+  ],
+  "homepage_pairs": [
+    {
+      "english": "README.md",
+      "chinese": "README_ZH.md",
+      "profile": "single-product",
+      "required_components": [
+        "centered_header",
+        "html_h1",
+        "subtitle",
+        "badges",
+        "language_switch",
+        "quick_links",
+        "hero_image",
+        "separator",
+        "h2"
+      ],
+      "required_quick_links": ["product", "documentation", "firmware", "esp_idf", "arduino"],
+      "required_badges": ["build", "release", "license"],
+      "required_h2_icons": ["✨", "🖥️", "📦", "🧪", "🛠️", "🗂️", "📚", "🤝", "📄"],
+      "h3_emoji_allow_patterns": []
+    }
   ]
 }

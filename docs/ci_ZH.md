@@ -2,7 +2,8 @@
 
 [English](ci.md)
 
-示例工作流始终运行轻量分类和第一方 Markdown 检查，并使用完整、识别重命名的
+示例工作流始终运行轻量分类和第一方 Markdown 检查，并显式传入
+`config/markdown-audit.json` 以消费首页契约。它使用完整、识别重命名的
 base 到 head 差异。空或不可用的差异会使分类失败，不会退回为全量构建。
 
 `scripts/ci_routing.py` 为每个框架输出 `none`、`selected` 或 `all`。根目录、
@@ -19,3 +20,7 @@ IDF 工程、Arduino sketch 及内置库中的 Markdown 都不选择产品构建
 手动触发支持 `all`、目录名或仓库相对示例路径。
 
 轻量 gate 只运行静态检查，不执行本地 ESP-IDF 或 Arduino 产品构建；硬件行为仍需板上验证。
+
+完整仓库审计同时使用两份 policy：`config/markdown-audit.json` 用于 Markdown
+所有权和首页策略，`config/ci-routing-audit.json` 用于路由策略。本仓库的有限检查器
+范围明确，不宣称覆盖完整仓库审计。

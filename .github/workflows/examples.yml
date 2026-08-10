@@ -53,7 +53,7 @@ jobs:
       - name: Run lightweight helper tests
         run: python3 -m unittest discover -s tests -p "test_*.py"
       - name: Check first-party Markdown (limited scope)
-        run: python3 scripts/check_first_party_markdown.py .
+        run: python3 scripts/check_first_party_markdown.py . --config config/markdown-audit.json
 
   discover-esp-idf:
     name: Discover ESP-IDF examples

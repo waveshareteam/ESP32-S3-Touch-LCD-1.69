@@ -3,7 +3,8 @@
 [简体中文](ci_ZH.md)
 
 The examples workflow always runs its lightweight classification and first-party
-Markdown checks. It uses a complete, rename-aware base-to-head diff; an empty
+Markdown checks, with `config/markdown-audit.json` passed explicitly to consume
+the homepage contract. It uses a complete, rename-aware base-to-head diff; an empty
 or unavailable diff fails classification rather than selecting every build.
 
 `scripts/ci_routing.py` routes each framework as `none`, `selected`, or `all`.
@@ -26,3 +27,8 @@ The full product matrix has 19 entries: four ESP-IDF projects on `v5.5.5` and
 
 This lightweight gate runs static checks only. Local ESP-IDF and Arduino product
 builds are not part of it; hardware behavior still requires board testing.
+
+For the complete repository audit, use both policy files:
+`config/markdown-audit.json` for Markdown ownership and homepage policy, and
+`config/ci-routing-audit.json` for routing policy. The repository-local checker
+is intentionally limited in scope and does not claim to be the complete repository audit.
