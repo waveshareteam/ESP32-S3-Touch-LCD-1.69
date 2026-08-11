@@ -1,0 +1,26 @@
+# 持续集成
+
+[English](ci.md)
+
+示例工作流始终运行轻量分类和第一方 Markdown 检查，并显式传入
+`config/markdown-audit.json` 以消费首页契约。它使用完整、识别重命名的
+base 到 head 差异。空或不可用的差异会使分类失败，不会退回为全量构建。
+
+`scripts/ci_routing.py` 为每个框架输出 `none`、`selected` 或 `all`。根目录、
+IDF 工程、Arduino sketch 及内置库中的 Markdown 都不选择产品构建；直接示例源码或
+配置只选择受影响项目；共享 Arduino 库选择全部 Arduino；配置、工作流、发现、构建或
+打包输入选择适用的全部示例。完整差异中的未知非文档路径会明确报告并保守选择全部。
+重命名和删除同时检查新旧路径。
+
+`firmware/` 中的 Markdown、源码/配置、二进制和归档仅作为固件/发布证据报告，
+不会进入示例矩阵。因此文档或治理变更会按设计跳过昂贵构建，但轻量任务始终可见。
+
+完整矩阵共 19 项：4 个 ESP-IDF 工程分别使用 `v5.5.5` 和 `v6.0.2`（8 项），加上
+11 个使用 Arduino-ESP32 `3.3.11` 的第一方 sketch。内置库 sketch 被排除。
+手动触发支持 `all`、目录名或仓库相对示例路径。
+
+轻量 gate 只运行静态检查，不执行本地 ESP-IDF 或 Arduino 产品构建；硬件行为仍需板上验证。
+
+完整仓库审计同时使用两份 policy：`config/markdown-audit.json` 用于 Markdown
+所有权和首页策略，`config/ci-routing-audit.json` 用于路由策略。本仓库的有限检查器
+范围明确，不宣称覆盖完整仓库审计。

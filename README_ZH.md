@@ -14,7 +14,7 @@
     <a href="examples/esp-idf/">🧩 ESP-IDF 示例</a> ·
     <a href="examples/arduino/">🔧 Arduino 示例</a>
   </p>
-  <img src="assets/540px-ESP32-S3-Touch-LCD-1.69-details-1.jpg" alt="Waveshare ESP32-S3-Touch-LCD-1.69" width="500">
+  <img src="assets/540px-ESP32-S3-Touch-LCD-1.69-details-1.jpg" alt="Waveshare ESP32-S3-Touch-LCD-1.69 正面，运行手表风格演示界面" width="500">
 </div>
 
 ---
@@ -64,7 +64,7 @@
 > 烧录参数、辅助脚本和固件清单。
 
 [`firmware/`](firmware/) 中的出厂恢复镜像与基于源码构建的示例固件包相互独立。
-详情请参阅[固件和出厂恢复](docs/firmware.md)。
+详情请参阅[固件和出厂恢复](docs/firmware_ZH.md)。
 
 ## 🧪 示例
 
@@ -100,13 +100,13 @@
 
 | 开发框架 | 版本 | 固件构建数 |
 | --- | --- | ---: |
-| ESP-IDF | `v5.5.4` | 4 |
+| ESP-IDF | `v5.5.5` | 4 |
 | ESP-IDF | `v6.0.2` | 4 |
-| Arduino-ESP32 | `3.3.10` | 11 |
+| Arduino-ESP32 | `3.3.11` | 11 |
 
 [示例构建工作流](https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/actions/workflows/examples.yml)
 会为完整矩阵运行 2 个示例发现任务和 19 个固件构建任务。每次成功构建都会打包为可烧录的固件产物。
-矩阵和手动触发方式的详细说明请参阅[持续集成](docs/ci.md)。
+矩阵和手动触发方式的详细说明请参阅[持续集成](docs/ci_ZH.md)。
 
 ## 🗂️ 仓库结构
 
@@ -125,20 +125,20 @@
 
 - [产品文档](https://docs.waveshare.net/ESP32-S3-Touch-LCD-1.69/)
 - [硬件参考](HARDWARE_REFERENCE_ZH.md)
-- [仓库结构](docs/repository-structure.md)
-- [持续集成](docs/ci.md)
-- [组件](docs/components.md)
-- [固件和出厂恢复](docs/firmware.md)
-- [发布工具](releases/README.md)
+- [仓库结构](docs/repository-structure_ZH.md)
+- [持续集成](docs/ci_ZH.md)
+- [组件](docs/components_ZH.md)
+- [固件和出厂恢复](docs/firmware_ZH.md)
+- [发布工具](releases/README_ZH.md)
 
 ## 🤝 支持与贡献
 
 欢迎提交贡献和可复现的问题报告。请提供示例路径、框架版本、复现步骤、预期行为、
 实际行为以及相关串口日志。
 
-- [贡献指南](CONTRIBUTING.md)
-- [技术支持](SUPPORT.md)
-- [安全策略](SECURITY.md)
+- [贡献指南](CONTRIBUTING_ZH.md)
+- [技术支持](SUPPORT_ZH.md)
+- [安全策略](SECURITY_ZH.md)
 - [提交 Issue](https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/issues/new/choose)
 
 ## 📄 许可证

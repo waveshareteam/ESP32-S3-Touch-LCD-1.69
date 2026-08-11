@@ -1,0 +1,13 @@
+{
+  "documentation_asset_patterns": [
+    "assets/*.gif", "assets/**/*.gif", "assets/*.jpeg", "assets/**/*.jpeg",
+    "assets/*.jpg", "assets/**/*.jpg", "assets/*.png", "assets/**/*.png",
+    "assets/*.svg", "assets/**/*.svg", "assets/*.webp", "assets/**/*.webp"
+  ],
+  "ignore_build_patterns": [".gitignore"],
+  "global_build_patterns": [
+    "scripts/*.py", "scripts/**/*.py", "tests/*.py", "tests/**/*.py",
+    "config/*.json", "config/**/*.json", "releases/*.py", "releases/**/*.py",
+    ".github/workflows/*.yml", ".github/workflows/*.yaml"
+  ]
+}

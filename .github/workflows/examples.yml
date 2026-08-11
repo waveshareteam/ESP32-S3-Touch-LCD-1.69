@@ -2,26 +2,9 @@ name: Build Examples
 
 on:
   push:
-    branches:
-      - main
-      - master
-    tags:
-      - "v*"
-    paths:
-      - ".github/workflows/examples.yml"
-      - "scripts/discover_examples.py"
-      - "releases/**"
-      - "config/**"
-      - "examples/esp-idf/**"
-      - "examples/arduino/**"
+    branches: [main, master]
+    tags: ["v*"]
   pull_request:
-    paths:
-      - ".github/workflows/examples.yml"
-      - "scripts/discover_examples.py"
-      - "releases/**"
-      - "config/**"
-      - "examples/esp-idf/**"
-      - "examples/arduino/**"
   workflow_dispatch:
     inputs:
       target:
@@ -32,22 +15,70 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
 jobs:
+  quality:
+    name: Classify changes and check first-party Markdown
+    runs-on: ubuntu-latest
+    outputs:
+      idf_route: ${{ steps.route.outputs.idf_route }}
+      idf_selectors: ${{ steps.route.outputs.idf_selectors }}
+      arduino_route: ${{ steps.route.outputs.arduino_route }}
+      arduino_selectors: ${{ steps.route.outputs.arduino_selectors }}
+      docs_only: ${{ steps.route.outputs.docs_only }}
+      firmware_paths: ${{ steps.route.outputs.firmware_paths }}
+      release_paths: ${{ steps.route.outputs.release_paths }}
+      unknown_paths: ${{ steps.route.outputs.unknown_paths }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Classify complete rename-aware diff
+        id: route
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            python3 scripts/ci_routing.py --manual-selector "${{ inputs.target }}" --github-output "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            python3 scripts/ci_routing.py --base "${{ github.event.pull_request.base.sha }}" --github-output "$GITHUB_OUTPUT"
+          elif [[ "${{ github.ref }}" == refs/tags/* || "${{ github.event.before }}" =~ ^0+$ ]]; then
+            python3 scripts/ci_routing.py --manual-selector all --github-output "$GITHUB_OUTPUT"
+          else
+            python3 scripts/ci_routing.py --base "${{ github.event.before }}" --github-output "$GITHUB_OUTPUT"
+          fi
+      - name: Run lightweight helper tests
+        run: python3 -m unittest discover -s tests -p "test_*.py"
+      - name: Check first-party Markdown (limited scope)
+        run: python3 scripts/check_first_party_markdown.py . --config config/markdown-audit.json
+
   discover-esp-idf:
     name: Discover ESP-IDF examples
+    needs: quality
+    if: needs.quality.outputs.idf_route != 'none'
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.discover.outputs.matrix }}
       count: ${{ steps.discover.outputs.count }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - id: discover
+        shell: bash
+        env:
+          SELECTORS: ${{ needs.quality.outputs.idf_selectors }}
         run: |
-          python3 scripts/discover_examples.py \
-            --surface esp-idf \
-            --selector "${{ github.event.inputs.target || 'all' }}" \
-            --idf-versions v5.5.4,v6.0.2 \
-            --github-output "$GITHUB_OUTPUT"
+          args=()
+          if [ "${{ needs.quality.outputs.idf_route }}" = "selected" ]; then
+            while IFS= read -r selector; do args+=(--selector "$selector"); done < <(python3 -c 'import json,sys; print(*json.loads(sys.argv[1]), sep="\n")' "$SELECTORS")
+          else
+            args+=(--selector all)
+          fi
+          python3 scripts/discover_examples.py --surface esp-idf "${args[@]}" --idf-versions v5.5.5,v6.0.2 --github-output "$GITHUB_OUTPUT"
 
   build-esp-idf:
     name: ${{ matrix.idf }} / ${{ matrix.name }}
@@ -60,6 +91,8 @@ jobs:
       matrix: ${{ fromJSON(needs.discover-esp-idf.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Build ${{ matrix.path }} with ESP-IDF ${{ matrix.idf }}
         shell: bash
         run: |
@@ -76,7 +109,7 @@ jobs:
             --name "ESP32-S3-Touch-LCD-1.69-${{ matrix.name }}-${{ matrix.idf }}" \
             --framework-version "${{ matrix.idf }}" \
             --target esp32s3 \
-            --git-sha "${{ github.sha }}" \
+            --git-sha "${{ github.event.pull_request.head.sha || github.sha }}" \
             --output-dir release-artifacts
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
@@ -87,20 +120,28 @@ jobs:
 
   discover-arduino:
     name: Discover Arduino sketches
+    needs: quality
+    if: needs.quality.outputs.arduino_route != 'none'
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.discover.outputs.matrix }}
       count: ${{ steps.discover.outputs.count }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - id: discover
+        shell: bash
+        env:
+          SELECTORS: ${{ needs.quality.outputs.arduino_selectors }}
         run: |
-          python3 scripts/discover_examples.py \
-            --surface arduino \
-            --selector "${{ github.event.inputs.target || 'all' }}" \
-            --arduino-core 3.3.10 \
-            --fqbn esp32:esp32:esp32s3 \
-            --github-output "$GITHUB_OUTPUT"
+          args=()
+          if [ "${{ needs.quality.outputs.arduino_route }}" = "selected" ]; then
+            while IFS= read -r selector; do args+=(--selector "$selector"); done < <(python3 -c 'import json,sys; print(*json.loads(sys.argv[1]), sep="\n")' "$SELECTORS")
+          else
+            args+=(--selector all)
+          fi
+          python3 scripts/discover_examples.py --surface arduino "${args[@]}" --arduino-core 3.3.11 --fqbn esp32:esp32:esp32s3 --github-output "$GITHUB_OUTPUT"
 
   build-arduino:
     name: ${{ matrix.name }}
@@ -112,6 +153,8 @@ jobs:
       matrix: ${{ fromJSON(needs.discover-arduino.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: arduino/setup-arduino-cli@v2
       - name: Install ESP32 Arduino core
         run: |
@@ -122,12 +165,7 @@ jobs:
       - name: Compile ${{ matrix.path }}
         shell: bash
         run: |
-          arduino-cli compile \
-            --fqbn "${{ matrix.fqbn }}" \
-            --libraries examples/arduino/libraries \
-            --export-binaries \
-            --output-dir "build/${{ matrix.name }}-${{ matrix.core }}" \
-            "${{ matrix.path }}"
+          arduino-cli compile --fqbn "${{ matrix.fqbn }}" --libraries examples/arduino/libraries --export-binaries --output-dir "build/${{ matrix.name }}-${{ matrix.core }}" "${{ matrix.path }}"
       - name: Package firmware
         run: |
           python3 releases/package_firmware.py \
@@ -137,7 +175,7 @@ jobs:
             --name "ESP32-S3-Touch-LCD-1.69-${{ matrix.name }}-arduino-${{ matrix.core }}" \
             --framework-version "${{ matrix.core }}" \
             --target esp32s3 \
-            --git-sha "${{ github.sha }}" \
+            --git-sha "${{ github.event.pull_request.head.sha || github.sha }}" \
             --output-dir release-artifacts
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
