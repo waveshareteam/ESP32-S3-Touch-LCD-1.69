@@ -24,6 +24,8 @@ PAIRS = (
     ("docs/firmware.md", "docs/firmware_ZH.md"),
     ("docs/repository-structure.md", "docs/repository-structure_ZH.md"),
     ("releases/README.md", "releases/README_ZH.md"),
+    (".github/ISSUE_TEMPLATE/bug_report.md", ".github/ISSUE_TEMPLATE/bug_report_ZH.md"),
+    (".github/pull_request_template.md", ".github/pull_request_template_ZH.md"),
     ("examples/esp-idf/02_ESP_IDF_ST7789_LVGL/README.md", "examples/esp-idf/02_ESP_IDF_ST7789_LVGL/README_ZH.md"),
 )
 LINK = re.compile(r"!?\[[^]]*\]\(([^)\s]+)(?:\s+[^)]*)?\)")

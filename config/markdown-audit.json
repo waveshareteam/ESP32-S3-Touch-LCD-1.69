@@ -1,8 +1,5 @@
 {
-  "pair_exempt_patterns": [
-    ".github/ISSUE_TEMPLATE/bug_report.md",
-    ".github/pull_request_template.md"
-  ],
+  "pair_exempt_patterns": [],
   "homepage_pairs": [
     {
       "english": "README.md",

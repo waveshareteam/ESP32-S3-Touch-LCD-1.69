@@ -2,11 +2,20 @@ import unittest
 import json
 import subprocess
 import sys
+import tempfile
+from pathlib import Path
 
 from scripts.ci_routing import classify, norm, parse_status_lines
 
 
 class RoutingTests(unittest.TestCase):
+    SCRIPT = Path(__file__).resolve().parents[1] / "scripts/ci_routing.py"
+
+    def _git(self, repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            ["git", *args], cwd=repo, text=True, capture_output=True, check=True
+        )
+
     def test_documentation_has_zero_builds(self):
         for path in ("README.md", ".github/ISSUE_TEMPLATE/bug_report.md", "config/README.md", "releases/README.md", "examples/esp-idf/01_ESP_IDF_ST7789/README.md", "examples/arduino/01_HelloWorld/README.md", "examples/arduino/libraries/X/README.md"):
             result = classify([path])
@@ -56,6 +65,83 @@ class RoutingTests(unittest.TestCase):
     def test_cli_workflow_style_invocation(self):
         completed = subprocess.run([sys.executable, "scripts/ci_routing.py", "--changed-file", "examples/arduino/01_HelloWorld/01_HelloWorld.ino"], text=True, capture_output=True, check=True)
         self.assertEqual(json.loads(completed.stdout)["arduino_route"], "selected")
+
+    def test_cli_base_and_github_output_match_workflow_contract(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            self._git(repo, "init", "-q")
+            self._git(repo, "config", "user.name", "CI Routing Test")
+            self._git(repo, "config", "user.email", "ci-routing@example.invalid")
+            (repo / "README.md").write_text("baseline\n", encoding="utf-8")
+            self._git(repo, "add", "README.md")
+            self._git(repo, "commit", "-q", "-m", "baseline")
+            base = self._git(repo, "rev-parse", "HEAD").stdout.strip()
+
+            source = repo / "examples/arduino/one/one.ino"
+            source.parent.mkdir(parents=True)
+            source.write_text("void setup() {}\nvoid loop() {}\n", encoding="utf-8")
+            self._git(repo, "add", source.relative_to(repo).as_posix())
+            self._git(repo, "commit", "-q", "-m", "add sketch")
+
+            github_output = repo / "github-output.txt"
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(self.SCRIPT),
+                    "--base",
+                    base,
+                    "--github-output",
+                    str(github_output),
+                ],
+                cwd=repo,
+                text=True,
+                capture_output=True,
+                check=True,
+            )
+            result = json.loads(completed.stdout)
+            self.assertEqual(result["arduino_route"], "selected")
+            self.assertEqual(result["arduino_selectors"], ["examples/arduino/one"])
+            outputs = dict(
+                line.split("=", 1)
+                for line in github_output.read_text(encoding="utf-8").splitlines()
+            )
+            self.assertEqual(outputs["arduino_route"], "selected")
+            self.assertEqual(json.loads(outputs["arduino_selectors"]), ["examples/arduino/one"])
+
+            current = self._git(repo, "rev-parse", "HEAD").stdout.strip()
+            empty = subprocess.run(
+                [sys.executable, str(self.SCRIPT), "--base", current],
+                cwd=repo,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(empty.returncode, 2)
+            self.assertIn("changed-file input is empty or unavailable", empty.stderr)
+
+    def test_cli_manual_selector_writes_github_output(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp) / "github-output.txt"
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(self.SCRIPT),
+                    "--manual-selector",
+                    "all",
+                    "--github-output",
+                    str(output),
+                ],
+                text=True,
+                capture_output=True,
+                check=True,
+            )
+            self.assertEqual(json.loads(completed.stdout)["idf_route"], "all")
+            values = dict(
+                line.split("=", 1)
+                for line in output.read_text(encoding="utf-8").splitlines()
+            )
+            self.assertEqual(values["idf_route"], "all")
+            self.assertEqual(values["arduino_route"], "all")
 
     def test_multiple_selector_shell_equivalent(self):
         selectors = '["01_ESP_IDF_ST7789","02_ESP_IDF_ST7789_LVGL"]'

@@ -141,7 +141,7 @@ jobs:
           else
             args+=(--selector all)
           fi
-          python3 scripts/discover_examples.py --surface arduino "${args[@]}" --arduino-core 3.3.11 --fqbn esp32:esp32:esp32s3 --github-output "$GITHUB_OUTPUT"
+          python3 scripts/discover_examples.py --surface arduino "${args[@]}" --arduino-core 3.3.11 --fqbn esp32:esp32:esp32s3:FlashSize=16M,PSRAM=opi --github-output "$GITHUB_OUTPUT"
 
   build-arduino:
     name: ${{ matrix.name }}

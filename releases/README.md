@@ -26,7 +26,7 @@ Export binaries into a stable output directory, then package them:
 
 ```bash
 arduino-cli compile \
-  --fqbn esp32:esp32:esp32s3 \
+  --fqbn esp32:esp32:esp32s3:FlashSize=16M,PSRAM=opi \
   --libraries examples/arduino/libraries \
   --export-binaries \
   --output-dir build/01_HelloWorld-3.3.11 \

@@ -10,6 +10,7 @@ from pathlib import Path
 
 IDF_ROOT = Path("examples/esp-idf")
 ARDUINO_ROOT = Path("examples/arduino")
+DEFAULT_ARDUINO_FQBN = "esp32:esp32:esp32s3:FlashSize=16M,PSRAM=opi"
 
 
 def normalize(value: str) -> str:
@@ -90,7 +91,7 @@ def main() -> None:
     parser.add_argument("--selector", action="append", default=[])
     parser.add_argument("--idf-versions", default="v5.5.5,v6.0.2")
     parser.add_argument("--arduino-core", default="3.3.11")
-    parser.add_argument("--fqbn", default="esp32:esp32:esp32s3")
+    parser.add_argument("--fqbn", default=DEFAULT_ARDUINO_FQBN)
     parser.add_argument("--github-output")
     args = parser.parse_args()
 
