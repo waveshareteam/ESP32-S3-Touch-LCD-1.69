@@ -27,7 +27,7 @@ lv_obj_t *label;  // Global label object
 Arduino_DataBus *bus = new Arduino_ESP32SPI(LCD_DC, LCD_CS, LCD_SCK, LCD_MOSI);
 
 Arduino_GFX *gfx = new Arduino_ST7789(bus, LCD_RST /* RST */,
-                                      0 /* rotation */, true /* IPS */, LCD_WIDTH, LCD_HEIGHT, 0, 20, 0, 0);
+                                      0 /* rotation */, true /* IPS */, LCD_WIDTH, LCD_HEIGHT, 0, 20, 0, 20);
 
 #if LV_USE_LOG!= 0
 /* Serial debugging */

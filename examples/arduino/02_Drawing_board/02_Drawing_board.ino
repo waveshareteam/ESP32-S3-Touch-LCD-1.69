@@ -9,7 +9,7 @@ HWCDC USBSerial;
 Arduino_DataBus *bus = new Arduino_ESP32SPI(LCD_DC, LCD_CS, LCD_SCK, LCD_MOSI);
 
 Arduino_GFX *gfx = new Arduino_ST7789(bus, LCD_RST /* RST */,
-                                      0 /* rotation */, true /* IPS */, LCD_WIDTH, LCD_HEIGHT, 0, 20, 0, 0);
+                                      0 /* rotation */, true /* IPS */, LCD_WIDTH, LCD_HEIGHT, 0, 20, 0, 20);
 
 static constexpr uint16_t DRAW_COLOR = RGB565_BLUE;
 static constexpr uint16_t BACKGROUND_COLOR = RGB565_WHITE;

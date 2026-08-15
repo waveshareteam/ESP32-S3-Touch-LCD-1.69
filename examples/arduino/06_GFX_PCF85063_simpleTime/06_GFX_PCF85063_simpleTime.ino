@@ -13,7 +13,7 @@ char previousTimeString[20] = "";
 Arduino_DataBus *bus = new Arduino_ESP32SPI(LCD_DC, LCD_CS, LCD_SCK, LCD_MOSI);
 
 Arduino_GFX *gfx = new Arduino_ST7789(bus, LCD_RST /* RST */,
-                                      0 /* rotation */, true /* IPS */, LCD_WIDTH, LCD_HEIGHT, 0, 20, 0, 0);
+                                      0 /* rotation */, true /* IPS */, LCD_WIDTH, LCD_HEIGHT, 0, 20, 0, 20);
 
 const uint8_t TEXT_SIZE = 3;
 const int16_t FONT_WIDTH = 6;
