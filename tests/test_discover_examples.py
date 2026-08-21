@@ -1,8 +1,11 @@
+import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.discover_examples import build_matrix
+from scripts.discover_examples import DEFAULT_ARDUINO_FQBN, build_matrix
 
 
 class DiscoverTests(unittest.TestCase):
@@ -22,3 +25,26 @@ class DiscoverTests(unittest.TestCase):
         self.assertEqual(len(build_matrix(self.args("esp-idf", ["all"]))["include"]), 4)
         self.assertEqual(len(build_matrix(self.args("esp-idf", ["one"]))["include"]), 2)
         self.assertEqual(len(build_matrix(self.args("arduino", ["examples/arduino/one", "two"]))["include"]), 2)
+
+    def test_cli_default_uses_hardware_correct_arduino_fqbn(self):
+        repo = Path(__file__).resolve().parents[1]
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(repo / "scripts/discover_examples.py"),
+                "--repo",
+                str(self.root),
+                "--surface",
+                "arduino",
+                "--selector",
+                "all",
+            ],
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        entries = json.loads(completed.stdout)["include"]
+        self.assertEqual(len(entries), 2)
+        self.assertEqual({entry["fqbn"] for entry in entries}, {DEFAULT_ARDUINO_FQBN})
+        workflow = (repo / ".github/workflows/examples.yml").read_text(encoding="utf-8")
+        self.assertIn(f"--fqbn {DEFAULT_ARDUINO_FQBN}", workflow)

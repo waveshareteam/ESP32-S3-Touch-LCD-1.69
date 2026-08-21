@@ -22,7 +22,11 @@ by design while the lightweight job remains visible.
 
 The full product matrix has 19 entries: four ESP-IDF projects on `v5.5.5` and
 `v6.0.2` (8 builds) plus 11 first-party Arduino sketches on Arduino-ESP32
-`3.3.11`. Bundled-library sketches are excluded. `workflow_dispatch` accepts
+`3.3.11`. Arduino discovery and builds use
+`esp32:esp32:esp32s3:FlashSize=16M,PSRAM=opi`, matching this board's
+ESP32-S3R8 with 16 MB Flash and 8 MB PSRAM. The IDF LVGL example seeds the
+same 16 MB Flash and 8 MB octal PSRAM profile. Bundled-library sketches are
+excluded. `workflow_dispatch` accepts
 `all`, a directory name, or a repository-relative example path.
 
 This lightweight gate runs static checks only. Local ESP-IDF and Arduino product

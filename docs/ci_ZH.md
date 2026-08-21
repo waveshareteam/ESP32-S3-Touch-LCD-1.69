@@ -16,7 +16,10 @@ IDF 工程、Arduino sketch 及内置库中的 Markdown 都不选择产品构建
 不会进入示例矩阵。因此文档或治理变更会按设计跳过昂贵构建，但轻量任务始终可见。
 
 完整矩阵共 19 项：4 个 ESP-IDF 工程分别使用 `v5.5.5` 和 `v6.0.2`（8 项），加上
-11 个使用 Arduino-ESP32 `3.3.11` 的第一方 sketch。内置库 sketch 被排除。
+11 个使用 Arduino-ESP32 `3.3.11` 的第一方 sketch。Arduino 发现和构建使用
+`esp32:esp32:esp32s3:FlashSize=16M,PSRAM=opi`，与本开发板的 ESP32-S3R8、
+16 MB Flash 和 8 MB PSRAM 相匹配。IDF LVGL 示例同样预置 16 MB Flash 和
+8 MB 八线 PSRAM 配置。内置库 sketch 被排除。
 手动触发支持 `all`、目录名或仓库相对示例路径。
 
 轻量 gate 只运行静态检查，不执行本地 ESP-IDF 或 Arduino 产品构建；硬件行为仍需板上验证。

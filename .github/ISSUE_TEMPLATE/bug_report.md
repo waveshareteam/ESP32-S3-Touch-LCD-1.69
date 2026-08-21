@@ -4,6 +4,8 @@ about: Report a problem with a first-party example, document, or factory artifac
 labels: bug
 ---
 
+[简体中文](bug_report_ZH.md)
+
 ## Summary
 
 Describe the observed problem and its expected behavior.
