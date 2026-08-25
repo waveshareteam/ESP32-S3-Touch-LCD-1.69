@@ -73,22 +73,26 @@ void example_increase_reboot(void *arg) {
 
 /*Read the touchpad*/
 void my_touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data) {
+  /* Only talk to the CST816T once it has signalled an interrupt. LVGL polls
+     this callback every 30 ms, so reading unconditionally hammers the touch
+     controller over I2C even while nothing is touching it. */
+  if (CST816T->IIC_Interrupt_Flag != true) {
+    data->state = LV_INDEV_STATE_REL;
+    return;
+  }
+  CST816T->IIC_Interrupt_Flag = false;
+
   int32_t touchX = CST816T->IIC_Read_Device_Value(CST816T->Arduino_IIC_Touch::Value_Information::TOUCH_COORDINATE_X);
   int32_t touchY = CST816T->IIC_Read_Device_Value(CST816T->Arduino_IIC_Touch::Value_Information::TOUCH_COORDINATE_Y);
 
-  if (CST816T->IIC_Interrupt_Flag == true) {
-    CST816T->IIC_Interrupt_Flag = false;
-    data->state = LV_INDEV_STATE_PR;
+  data->state = LV_INDEV_STATE_PR;
 
-    /* Set the coordinates with some debounce */
-    if (touchX >= 0 && touchY >= 0) {
-      data->point.x = touchX;
-      data->point.y = touchY;
+  /* Set the coordinates with some debounce */
+  if (touchX >= 0 && touchY >= 0) {
+    data->point.x = touchX;
+    data->point.y = touchY;
 
-      USBSerial.printf("Data x: %d, Data y: %d\n", touchX, touchY);
-    }
-  } else {
-    data->state = LV_INDEV_STATE_REL;
+    USBSerial.printf("Data x: %d, Data y: %d\n", touchX, touchY);
   }
 }
 
