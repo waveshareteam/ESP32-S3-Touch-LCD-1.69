@@ -1,9 +1,27 @@
-# ESP32-S3 ST7789 LVGL 示例
+# 02_ESP_IDF_ST7789_LVGL
 
-[English](README.md)
+[English](README.md) | [简体中文](README_ZH.md)
 
-此 ESP-IDF 工程面向 ESP32-S3-Touch-LCD-1.69，集成本板使用的 ST7789 显示屏、LVGL
-显示端口和 CST816T 电容触摸组件。它是产品示例，并非通用 ESP-IDF 工程模板。
+## 功能
 
-工程配置位于 `sdkconfig.defaults`，应用代码及组件清单位于 `main/`。请在仓库根目录下使用
-所选 ESP-IDF 环境，以 `esp32s3` 目标构建。板级信号请参阅[硬件参考](../../../HARDWARE_REFERENCE_ZH.md)。
+LVGL 显示与电容触摸。
+
+## 硬件需求
+
+ESP32-S3-Touch-LCD-1.69 开发板和 USB 数据线。
+
+## 怎么运行
+
+启用[仓库首页](../../../README_ZH.md)列出的 ESP-IDF 环境，在本示例目录中执行：
+
+```bash
+idf.py set-target esp32s3 build flash monitor
+```
+
+## 预期现象
+
+LCD 显示 LVGL 控件演示，并响应触摸操作。
+
+## 常见问题
+
+首次编译需要联网下载 main/idf_component.yml 中声明的托管组件。
