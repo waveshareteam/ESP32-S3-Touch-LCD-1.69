@@ -1,28 +1,23 @@
-# Environmental Variables
 .env
-
-# VS Code
-.vscode/
-
-# ESP-IDF generated files
-build/
-**/build/
-sdkconfig
-sdkconfig.old
-managed_components/
-**/managed_components/
-dependencies.lock
+**/.vscode
+**/.idea
+**/build
+**/managed_components
 **/dependencies.lock
-
-# Release package output
-releases/dist/
-release-artifacts/
-releases/downloads/
-
-# Local workspace metadata
-.codex/
-.claude/
-
-# Python test bytecode
-__pycache__/
+**/sdkconfig
+**/sdkconfig.old
 **/__pycache__/
+release-artifacts/
+release-downloads/
+release-dist/
+
+# Local AI coding agent state
+.claude/
+.cursor/
+.codex/
+.gemini/
+.windsurf/
+.continue/
+.roo/
+.cline/
+.aider*
