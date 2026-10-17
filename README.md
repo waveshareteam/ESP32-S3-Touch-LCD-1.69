@@ -2,34 +2,26 @@
   <h1>ESP32-S3-Touch-LCD-1.69</h1>
   <p><strong>ESP32-S3 1.69-inch 240 x 280 SPI LCD touch development board</strong></p>
   <p>
-    <a href="https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/actions/workflows/examples.yml"><img alt="Build Examples" src="https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/actions/workflows/examples.yml/badge.svg"></a>
+    <a href="https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/actions/workflows/build.yml"><img alt="Build" src="https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/actions/workflows/build.yml/badge.svg"></a>
     <a href="https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/releases/latest"><img alt="Latest Release" src="https://img.shields.io/github/v/release/waveshareteam/ESP32-S3-Touch-LCD-1.69"></a>
     <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/waveshareteam/ESP32-S3-Touch-LCD-1.69"></a>
   </p>
+  <p><strong>English</strong> | <a href="README_ZH.md">简体中文</a></p>
   <p>
-    <a href="README_ZH.md">中文</a> ·
-    <a href="https://www.waveshare.com/esp32-s3-touch-lcd-1.69.htm">🌐 Product Page</a> ·
-    <a href="https://docs.waveshare.com/ESP32-S3-Touch-LCD-1.69">📚 Documentation</a> ·
-    <a href="https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/releases/latest">📦 Firmware Releases</a> ·
-    <a href="examples/esp-idf/">🧩 ESP-IDF Examples</a> ·
-    <a href="examples/arduino/">🔧 Arduino Examples</a>
+    <a href="https://www.waveshare.com/esp32-s3-touch-lcd-1.69.htm">🌐 Product</a> &middot;
+    <a href="https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/releases/latest">📦 Firmware</a> &middot;
+    <a href="examples/esp-idf/">🧩 ESP-IDF</a> &middot;
+    <a href="examples/arduino/examples/">🔧 Arduino</a> &middot;
+    <a href="hardware/">📚 Documentation</a>
   </p>
-  <img src="assets/540px-ESP32-S3-Touch-LCD-1.69-details-1.jpg" alt="Front view of the Waveshare ESP32-S3-Touch-LCD-1.69 running a watch-style demo" width="500">
+  <img src="docs/images/esp32-s3-touch-lcd-1.69.jpg" alt="ESP32-S3-Touch-LCD-1.69 development board" width="500">
 </div>
 
 ---
 
 ## ✨ Overview
 
-This repository provides first-party examples, ready-to-flash source-built
-firmware packages, factory recovery firmware, schematics, pinout drawings, and
-mechanical references for the Waveshare ESP32-S3-Touch-LCD-1.69.
-
-The board combines an ESP32-S3 with a compact color LCD, capacitive touch,
-motion sensing, real-time clock, battery management, and expansion interfaces
-for wearable devices, smart terminals, and interactive control panels.
-
-## 🖥️ Hardware Overview
+This repository provides ESP-IDF and Arduino examples, firmware downloads and hardware resources for the Waveshare ESP32-S3-Touch-LCD-1.69. The board combines an LCD, capacitive touch, a six-axis IMU, a real-time clock and lithium battery management for wearable devices and interactive control panels.
 
 | Feature | Device / interface |
 | --- | --- |
@@ -44,30 +36,18 @@ for wearable devices, smart terminals, and interactive control panels.
 | User interfaces | Onboard buzzer, USB Type-C, and BOOT / power buttons |
 | Expansion | 5 V, 3.3 V, GND, I2C, UART, and GPIO signals |
 | Board support | Available managed BSP: [`waveshare/esp32_s3_touch_lcd_1_69`](https://github.com/waveshareteam/Waveshare-ESP32-components/tree/master/bsp/esp32_s3_touch_lcd_1_69) |
-| Hardware files | [Schematics](hardware/schematics/), [pinout](hardware/pinout/), and [mechanical dimensions](hardware/dimensions/) |
 
-For complete GPIO assignments and I2C addresses, see the
-[Hardware Reference](HARDWARE_REFERENCE.md).
+## 📦 Quick Start
 
-## 📦 Firmware Releases
+Download a ready-to-flash package for your example and framework version from the [latest release](https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/releases/latest).
 
-The fastest way to try an example is to use a ready-to-flash package from the
-[latest release](https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/releases/latest).
-
-1. Download the `.zip` package for the example and framework version you need.
-2. Extract the archive and install esptool with
-   `python -m pip install esptool`.
+1. Download the example firmware ZIP package.
+2. Extract it and install esptool with `python -m pip install esptool`.
 3. Connect the board over USB.
-4. Run `flash.bat COMx` on Windows or `./flash.sh /dev/ttyACM0` on Linux.
+4. Run the flashing script described in the package README.
 5. Reset the board if it does not restart automatically.
 
-> [!NOTE]
-> The combined image is flashed at offset `0x0`. Each package also contains the
-> original binaries, flash arguments, helper scripts, and a firmware manifest.
-
-Factory recovery images under [`firmware/`](firmware/) are separate from the
-source-built example packages. See
-[Firmware and Factory Recovery](docs/firmware.md) for details.
+Factory firmware (restores the out-of-box demo): download the file whose name contains `FactoryOnly` from the [Releases page](https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/releases).
 
 ## 🧪 Examples
 
@@ -84,70 +64,41 @@ source-built example packages. See
 
 | Example | Focus |
 | --- | --- |
-| [01_HelloWorld](examples/arduino/01_HelloWorld/) | Arduino GFX display bring-up |
-| [02_Drawing_board](examples/arduino/02_Drawing_board/) | Capacitive-touch drawing board |
-| [03_GFX_AsciiTable](examples/arduino/03_GFX_AsciiTable/) | GFX text and character rendering |
-| [04_GFX_ESPWiFiAnalyzer](examples/arduino/04_GFX_ESPWiFiAnalyzer/) | Wi-Fi scanning and channel visualization |
-| [05_GFX_Clock](examples/arduino/05_GFX_Clock/) | Graphical clock rendering |
-| [06_GFX_PCF85063_simpleTime](examples/arduino/06_GFX_PCF85063_simpleTime/) | PCF85063 RTC with GFX output |
-| [07_LVGL_Measuring_voltage](examples/arduino/07_LVGL_Measuring_voltage/) | LVGL battery-voltage monitor |
-| [08_LVGL_PCF85063_simpleTime](examples/arduino/08_LVGL_PCF85063_simpleTime/) | PCF85063 RTC with an LVGL interface |
-| [09_LVGL_Keys_Bee](examples/arduino/09_LVGL_Keys_Bee/) | Button gestures and buzzer feedback |
-| [10_LVGL_QMI8658_ui](examples/arduino/10_LVGL_QMI8658_ui/) | LVGL IMU data visualization |
-| [11_LVGL_Arduino](examples/arduino/11_LVGL_Arduino/) | LVGL widgets with display and touch input |
+| [01_HelloWorld](examples/arduino/examples/01_HelloWorld/) | Arduino GFX display bring-up |
+| [02_Drawing_board](examples/arduino/examples/02_Drawing_board/) | Capacitive-touch drawing board |
+| [03_GFX_AsciiTable](examples/arduino/examples/03_GFX_AsciiTable/) | GFX text and character rendering |
+| [04_GFX_ESPWiFiAnalyzer](examples/arduino/examples/04_GFX_ESPWiFiAnalyzer/) | Wi-Fi scanning and channel visualization |
+| [05_GFX_Clock](examples/arduino/examples/05_GFX_Clock/) | Graphical clock rendering |
+| [06_GFX_PCF85063_simpleTime](examples/arduino/examples/06_GFX_PCF85063_simpleTime/) | PCF85063 RTC with GFX output |
+| [07_LVGL_Measuring_voltage](examples/arduino/examples/07_LVGL_Measuring_voltage/) | LVGL battery-voltage monitor |
+| [08_LVGL_PCF85063_simpleTime](examples/arduino/examples/08_LVGL_PCF85063_simpleTime/) | PCF85063 RTC with an LVGL interface |
+| [09_LVGL_Keys_Bee](examples/arduino/examples/09_LVGL_Keys_Bee/) | Button gestures and buzzer feedback |
+| [10_LVGL_QMI8658_ui](examples/arduino/examples/10_LVGL_QMI8658_ui/) | LVGL IMU data visualization |
+| [11_LVGL_Arduino](examples/arduino/examples/11_LVGL_Arduino/) | LVGL widgets with display and touch input |
 
-Bundled Arduino libraries live under
-[`examples/arduino/libraries/`](examples/arduino/libraries/). Their upstream
-library examples are intentionally excluded from the product CI matrix.
+Sketch libraries are bundled in [`examples/arduino/libraries/`](examples/arduino/libraries/).
 
-## 🛠️ Supported Toolchains
+## 🛠️ Development Environment
 
-| Surface | Version | Firmware builds |
+| Framework | Version | Examples |
 | --- | --- | ---: |
 | ESP-IDF | `v5.5.5` | 4 |
 | ESP-IDF | `v6.0.2` | 4 |
 | Arduino-ESP32 | `3.3.11` | 11 |
 
-The [Build Examples workflow](https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/actions/workflows/examples.yml)
-runs two discovery jobs and 19 firmware build jobs for the full matrix. Each
-successful build is packaged as a flashable firmware artifact. See
-[Continuous Integration](docs/ci.md) for matrix and dispatch details.
+## 📚 Resources
 
-## 🗂️ Repository Layout
+- [Schematics](hardware/schematic/)
+- [Mechanical dimensions](hardware/mechanical/)
+- [Pinout](docs/images/ESP32-S3-Touch-LCD-1.69-Pinout.webp)
+- [Product page](https://www.waveshare.com/esp32-s3-touch-lcd-1.69.htm)
+- [Wiki](https://docs.waveshare.com/ESP32-S3-Touch-LCD-1.69)
 
-| Path | Purpose |
-| --- | --- |
-| [`examples/esp-idf/`](examples/esp-idf/) | First-party ESP-IDF projects |
-| [`examples/arduino/`](examples/arduino/) | First-party Arduino sketches and bundled libraries |
-| [`firmware/`](firmware/) | Factory flashing and recovery binary |
-| [`releases/`](releases/) | Firmware packaging, artifact download, and release tools |
-| [`hardware/`](hardware/) | Schematics, pinout, and mechanical reference files |
-| [`config/`](config/) | Reserved for shared ESP-IDF configuration overlays |
-| [`docs/`](docs/) | Repository, CI, component, and firmware notes |
-| [`assets/`](assets/) | Product images used by documentation |
+## 🤝 Support
 
-## 📚 Documentation
-
-- [Product Documentation](https://docs.waveshare.com/ESP32-S3-Touch-LCD-1.69)
-- [Hardware Reference](HARDWARE_REFERENCE.md)
-- [Repository Structure](docs/repository-structure.md)
-- [Continuous Integration](docs/ci.md)
-- [Components](docs/components.md)
-- [Firmware and Factory Recovery](docs/firmware.md)
-- [Release Tools](releases/README.md)
-
-## 🤝 Support and Contributions
-
-Contributions and reproducible issue reports are welcome. Include the example
-path, framework version, reproduction steps, expected behavior, actual
-behavior, and relevant serial logs.
-
-- [Contributing Guide](CONTRIBUTING.md)
-- [Support](SUPPORT.md)
-- [Security Policy](SECURITY.md)
-- [Open an Issue](https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/issues/new/choose)
+- Example or repository problems: [open an issue](https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/issues).
+- Product usage, hardware or order questions: [Waveshare support](https://service.waveshare.com/).
 
 ## 📄 License
 
-This repository is licensed under the Apache License 2.0. See
-[LICENSE](LICENSE).
+Apache License 2.0. See [LICENSE](LICENSE).
