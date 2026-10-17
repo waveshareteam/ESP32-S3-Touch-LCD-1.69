@@ -20,4 +20,4 @@ The display shows the RTC time and date; USB serial prints the same values once 
 
 ## Troubleshooting
 
-setup() defines an initial date and time but does not write them to the RTC; the display uses the stored RTC value.
+Each startup writes the fixed time `2024-09-24 11:09:41` from `setup()` to the RTC, overwriting its stored value. Change these constants before uploading to set a different time.
