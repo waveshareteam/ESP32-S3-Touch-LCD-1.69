@@ -96,7 +96,7 @@ Sketch libraries are bundled in [`examples/arduino/libraries/`](examples/arduino
 
 ## 🤝 Support
 
-- Example or repository problems: [open an issue](https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/issues).
+- Example or repository problems: [open an issue](https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/issues/new/choose).
 - Product usage, hardware or order questions: [Waveshare support](https://service.waveshare.com/).
 
 ## 📄 License
