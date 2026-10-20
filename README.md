@@ -1,12 +1,12 @@
 <div align="center">
   <h1>ESP32-S3-Touch-LCD-1.69</h1>
   <p><strong>ESP32-S3 1.69-inch 240 x 280 SPI LCD touch development board</strong></p>
+  <p><strong>English</strong> | <a href="README_ZH.md">简体中文</a></p>
   <p>
     <a href="https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/actions/workflows/build.yml"><img alt="Build" src="https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/actions/workflows/build.yml/badge.svg"></a>
     <a href="https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/releases/latest"><img alt="Latest Release" src="https://img.shields.io/github/v/release/waveshareteam/ESP32-S3-Touch-LCD-1.69"></a>
     <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/waveshareteam/ESP32-S3-Touch-LCD-1.69"></a>
   </p>
-  <p><strong>English</strong> | <a href="README_ZH.md">简体中文</a></p>
   <p>
     <a href="https://www.waveshare.com/esp32-s3-touch-lcd-1.69.htm">🌐 Product</a> &middot;
     <a href="https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/releases/latest">📦 Firmware</a> &middot;
