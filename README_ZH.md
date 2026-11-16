@@ -8,11 +8,11 @@
     <a href="LICENSE"><img alt="许可证" src="https://img.shields.io/github/license/waveshareteam/ESP32-S3-Touch-LCD-1.69"></a>
   </p>
   <p>
-    <a href="https://www.waveshare.com/esp32-s3-touch-lcd-1.69.htm">🌐 产品页</a> &middot;
+    <a href="https://www.waveshare.com/esp32-s3-touch-lcd-1.69.htm">🛒 产品页</a> &middot;
     <a href="https://github.com/waveshareteam/ESP32-S3-Touch-LCD-1.69/releases/latest">📦 固件</a> &middot;
     <a href="examples/esp-idf/">🧩 ESP-IDF</a> &middot;
     <a href="examples/arduino/examples/">🔧 Arduino</a> &middot;
-    <a href="hardware/">📚 资料</a>
+    <a href="https://docs.waveshare.net/ESP32-S3-Touch-LCD-1.69/">📖 文档</a>
   </p>
   <img src="docs/images/esp32-s3-touch-lcd-1.69.jpg" alt="ESP32-S3-Touch-LCD-1.69 开发板" width="500">
 </div>
