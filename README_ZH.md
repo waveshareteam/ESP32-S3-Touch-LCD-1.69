@@ -47,7 +47,7 @@
 4. 按固件包内 README 的说明运行烧录脚本。
 5. 若开发板未自动重启，手动复位。
 
-出厂固件（恢复开箱演示）：在 [`firmware`](firmware/) 目录下载文件名带 `FactoryOnly` 的文件。
+如需恢复开箱演示，ESP32-S3-Touch-LCD-1.69 请使用[触摸版出厂固件](firmware/README_ZH.md)，ESP32-S3-LCD-1.69 请使用[非触摸版出厂固件](firmware/ESP32-S3-LCD-1.69/README_ZH.md)。
 
 ## 🧪 示例
 

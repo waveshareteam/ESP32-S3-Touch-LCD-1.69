@@ -47,7 +47,7 @@ Download a ready-to-flash package for your example and framework version from th
 4. Run the flashing script described in the package README.
 5. Reset the board if it does not restart automatically.
 
-Factory firmware (restores the out-of-box demo): download the file whose name contains `FactoryOnly` from the [`firmware`](firmware/) folder.
+To restore the out-of-box demo on ESP32-S3-Touch-LCD-1.69, see the [touch model firmware](firmware/README.md). For ESP32-S3-LCD-1.69, use the [non-touch model firmware](firmware/ESP32-S3-LCD-1.69/README.md).
 
 ## 🧪 Examples
 

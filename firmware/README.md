@@ -4,6 +4,8 @@
 
 Ready-to-flash firmware tested on the ESP32-S3-Touch-LCD-1.69 board. Each file is a merged image flashed at `0x0`; the date in the file name is its version.
 
+For the ESP32-S3-LCD-1.69 board without touch, see the [non-touch model firmware](ESP32-S3-LCD-1.69/README.md).
+
 | File | Purpose |
 | --- | --- |
 | `ESP32-S3-Touch-LCD-1.69_FactoryOnly_20230612.bin` | Factory firmware, restores the out-of-box demo |
